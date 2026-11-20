@@ -45,6 +45,44 @@ Build ini statis, jadi performa sangat bergantung pada server. Wajib:
 Vercel, Netlify, dan Cloudflare Pages melakukan ketiganya otomatis. Kalau memakai server
 sendiri, atur di reverse proxy.
 
+## Deploy ke VPS (Nginx)
+
+Situs berjalan di VPS Ubuntu 24.04 sebagai file statis. Tidak ada proses Node di server.
+
+```bash
+# 1. build di mesin lokal, dengan URL produksi
+NEXT_PUBLIC_SITE_URL="http://ALAMAT-VPS" npm run build
+
+# 2. kirim hasil build
+tar -czf out.tar.gz -C out .
+scp out.tar.gz azureuser@ALAMAT-VPS:/tmp/
+
+# 3. pasang di server
+ssh azureuser@ALAMAT-VPS
+sudo rm -rf /var/www/jejak-baik/*
+sudo tar -xzf /tmp/out.tar.gz -C /var/www/jejak-baik
+sudo chown -R www-data:www-data /var/www/jejak-baik
+```
+
+Konfigurasi Nginx ada di `/etc/nginx/sites-available/jejak-baik`. Isinya sudah mencakup
+`try_files` untuk `trailingSlash`, `404.html`, gzip, cache `immutable` untuk `/_next/static/`,
+dan `no-cache` untuk HTML — empat syarat di bagian sebelumnya. Setelah mengubah konfigurasi:
+`sudo nginx -t && sudo systemctl reload nginx`.
+
+### Kalau port 80 masih tertutup
+
+Azure NSG harus mengizinkan inbound TCP 80 dari internet. Itu hanya bisa diubah dari portal
+Azure (VM → Networking → Add inbound port rule), tidak dari dalam VM. Selama belum dibuka,
+situs diakses lewat Cloudflare Tunnel yang berjalan sebagai service `jejak-tunnel`:
+
+```bash
+jejak-url   # cetak URL publik yang sedang aktif
+```
+
+URL `trycloudflare.com` itu sementara: berubah setiap service restart atau VM reboot. Untuk
+URL permanen, buka port 80 di NSG lalu pakai alamat IP VPS. HTTPS permanen butuh domain
+(Certbot tidak menerbitkan sertifikat untuk alamat IP).
+
 ## Pilihan stack
 
 Next.js 15 App Router dengan `output: "export"`.
@@ -199,7 +237,9 @@ persetujuan pemilik konten.
 ## Yang masih TODO
 
 - Domain produksi belum diisi. Set `NEXT_PUBLIC_SITE_URL` sebelum rilis, lalu build ulang
-  supaya canonical dan `og:image` memakai URL asli.
+  supaya canonical dan `og:image` memakai URL asli. Build saat ini memakai alamat IP VPS.
+- Port 80 Azure NSG belum dibuka, jadi URL publik sementara memakai Cloudflare Tunnel.
+- Belum ada HTTPS (butuh domain).
 - Belum ada backend, autentikasi, enkripsi, penyimpanan jawaban atau laporan, verifikasi
   Guru BK, dan riwayat akses. Semua halaman terkait hanya placeholder.
 - Tautan Masuk dan Daftar menuju halaman placeholder yang sama. Pembeda `?mode=` belum
