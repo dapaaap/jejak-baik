@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6.5rem;
+  }
+
+  body {
+    @apply bg-paper font-sans text-body text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-medium text-balance;
+  }
+
+  p {
+    @apply text-pretty;
+  }
+
+  ::selection {
+    background: var(--color-accent-tint);
+    color: var(--color-ink);
+  }
+
+  /* R-39: every enabled control shows it is usable, every disabled one does not. */
+  a[href],
+  button:not(:disabled),
+  summary,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="radio"],
+  [role="button"],
+  [role="tab"] {
+    cursor: pointer;
+  }
+
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* R-32: designed focus ring, never removed. */
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  .on-dark {
+    color: var(--color-paper);
+  }
+
+  .on-dark :focus-visible {
+    outline-color: var(--color-focus-inverse);
+  }
+
+  .on-dark ::selection {
+    background: var(--color-gold);
+    color: var(--color-forest-deep);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .skip-link {
+    @apply absolute left-gutter top-0 z-[100] inline-flex min-h-11 -translate-y-full items-center rounded-md bg-forest px-4 py-2 text-small font-medium text-paper;
+  }
+
+  .skip-link:focus {
+    @apply translate-y-2;
+  }
+
+  .kicker {
+    @apply flex items-center gap-3 text-caption font-semibold uppercase text-accent;
+  }
+
+  .kicker::before {
+    content: "";
+    @apply h-px w-8 bg-accent;
+  }
+
+  .hairline {
+    @apply border-t border-line;
+  }
+}
