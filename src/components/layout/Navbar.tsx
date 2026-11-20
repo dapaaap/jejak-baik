@@ -5,6 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { navItems, navMerek } from "@/data/navigasi";
 import { cn } from "@/lib/cn";
+import { akunGoogle } from "@/data/akun";
+import type { Profil } from "@/lib/progres";
+import { akhiriSesi, eventSesi, sesiAktif } from "@/lib/sesi";
+import { AvatarProfil } from "@/components/akun/AvatarProfil";
 import { Icon } from "@/components/ui/Icon";
 import { Wordmark } from "@/components/ui/Wordmark";
 import { Container } from "./Container";
@@ -14,8 +18,25 @@ const akun = navItems.filter((item) => item.variant === "akun");
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [sesi, setSesi] = useState<Profil | null>(null);
   const pathname = usePathname();
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const baca = () => setSesi(sesiAktif());
+    baca();
+    window.addEventListener(eventSesi, baca);
+    window.addEventListener("storage", baca);
+    return () => {
+      window.removeEventListener(eventSesi, baca);
+      window.removeEventListener("storage", baca);
+    };
+  }, []);
+
+  function keluar() {
+    akhiriSesi();
+    setOpen(false);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -64,18 +85,39 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-5 lg:flex">
-          <Link
-            href={akun[0].href}
-            className="text-small font-semibold text-ink underline-offset-4 hover:text-forest hover:underline"
-          >
-            {akun[0].label}
-          </Link>
-          <Link
-            href={akun[1].href}
-            className="inline-flex min-h-10 items-center rounded-md bg-forest px-4 text-small font-semibold text-paper transition-colors duration-fast hover:bg-forest-deep"
-          >
-            {akun[1].label}
-          </Link>
+          {sesi ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="flex min-h-11 items-center gap-2.5 rounded-md text-small font-semibold text-ink underline-offset-4 hover:text-forest hover:underline"
+              >
+                <AvatarProfil profil={sesi} ukuran={28} />
+                <span className="max-w-40 truncate">{sesi.nama}</span>
+              </Link>
+              <button
+                type="button"
+                onClick={keluar}
+                className="text-small font-semibold text-ink-muted underline-offset-4 hover:text-forest hover:underline"
+              >
+                {akunGoogle.keluar}
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href={akun[0].href}
+                className="text-small font-semibold text-ink underline-offset-4 hover:text-forest hover:underline"
+              >
+                {akun[0].label}
+              </Link>
+              <Link
+                href={akun[1].href}
+                className="inline-flex min-h-10 items-center rounded-md bg-forest px-4 text-small font-semibold text-paper transition-colors duration-fast hover:bg-forest-deep"
+              >
+                {akun[1].label}
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -118,21 +160,41 @@ export function Navbar() {
             </nav>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
-              {akun.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "inline-flex min-h-11 items-center justify-center rounded-md border px-4 text-small font-semibold",
-                    item.label === "Daftar"
-                      ? "border-forest bg-forest text-paper"
-                      : "border-line-strong text-ink",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {sesi ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setOpen(false)}
+                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-forest bg-forest px-4 text-small font-semibold text-paper"
+                  >
+                    <AvatarProfil profil={sesi} ukuran={28} />
+                    <span className="truncate">Dasbor</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={keluar}
+                    className="inline-flex min-h-11 items-center justify-center rounded-md border border-line-strong px-4 text-small font-semibold text-ink"
+                  >
+                    {akunGoogle.keluar}
+                  </button>
+                </>
+              ) : (
+                akun.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "inline-flex min-h-11 items-center justify-center rounded-md border px-4 text-small font-semibold",
+                      item.label === "Daftar"
+                        ? "border-forest bg-forest text-paper"
+                        : "border-line-strong text-ink",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                ))
+              )}
             </div>
           </Container>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PanelGuru } from "@/components/bukti/PanelGuru";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { pilihanPeran } from "@/data/akun";
 import { dasborHapus, dasborKartu, dasborKosong } from "@/data/dasbor";
@@ -23,6 +24,7 @@ export function DasborKlien() {
   const [simulasi, setSimulasi] = useState<HasilSimulasi | null>(null);
   const [konfirmasi, setKonfirmasi] = useState(false);
   const [pesan, setPesan] = useState("");
+  const [tampilan, setTampilan] = useState<"belajar" | "pengaduan">("belajar");
 
   useEffect(() => {
     try {
@@ -38,12 +40,15 @@ export function DasborKlien() {
   function hapusSemua() {
     try {
       hapusProgres(kunciProgres.profil);
+      hapusProgres(kunciProgres.akun);
       hapusProgres(kunciProgres.kuis);
       hapusProgres(kunciProgres.simulasi);
+      hapusProgres(kunciProgres.laporan);
       setProfil(null);
       setKuis(null);
       setSimulasi(null);
       setKonfirmasi(false);
+      setTampilan("belajar");
       setPesan(dasborHapus.sukses);
     } catch {
       setPesan("Peramban menolak menghapus data. Coba hapus lewat pengaturan peramban.");
@@ -72,9 +77,43 @@ export function DasborKlien() {
   }
 
   const kosong = !profil && !kuis && !simulasi;
+  const guru = profil?.peran === "guru";
 
   return (
     <div className="grid gap-8">
+      {guru ? (
+        <div className="flex flex-wrap gap-2 border-b border-line pb-3">
+          <button
+            type="button"
+            aria-pressed={tampilan === "belajar"}
+            onClick={() => setTampilan("belajar")}
+            className={
+              tampilan === "belajar"
+                ? "inline-flex min-h-11 items-center rounded-md border border-forest bg-forest px-4 text-small font-semibold text-paper"
+                : "inline-flex min-h-11 items-center rounded-md border border-line-strong px-4 text-small font-semibold text-ink hover:border-forest"
+            }
+          >
+            Progres belajar
+          </button>
+          <button
+            type="button"
+            aria-pressed={tampilan === "pengaduan"}
+            onClick={() => setTampilan("pengaduan")}
+            className={
+              tampilan === "pengaduan"
+                ? "inline-flex min-h-11 items-center rounded-md border border-forest bg-forest px-4 text-small font-semibold text-paper"
+                : "inline-flex min-h-11 items-center rounded-md border border-line-strong px-4 text-small font-semibold text-ink hover:border-forest"
+            }
+          >
+            Pengaduan masuk
+          </button>
+        </div>
+      ) : null}
+
+      {guru && tampilan === "pengaduan" ? (
+        <PanelGuru profil={profil} />
+      ) : (
+        <>
       {kosong ? (
         <div className="rounded-xl border border-line bg-paper-deep p-6 sm:p-8">
           <h2 className="text-h2 font-medium">{dasborKosong.judul}</h2>
@@ -208,6 +247,8 @@ export function DasborKlien() {
           ) : null}
         </div>
       ) : null}
+        </>
+      )}
     </div>
   );
 }

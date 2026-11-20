@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/layout/Container";
 import { Section } from "@/components/layout/Section";
 import { TombolSalin } from "@/components/bukti/TombolSalin";
+import { FormLaporan } from "@/components/bukti/FormLaporan";
 import { ButtonLink } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/SectionHeading";
 import {
@@ -26,8 +27,17 @@ export default function BuktiPelaporanPage() {
           <div className="lg:col-span-7">
             <Eyebrow>{buktiHero.label}</Eyebrow>
             <h1 className="mt-6 max-w-3xl text-display font-medium">{buktiHero.judul}</h1>
+            <div className="mt-6">
+              <ButtonLink href={buktiHero.aksi.href}>{buktiHero.aksi.label}</ButtonLink>
+            </div>
           </div>
           <p className="max-w-measure text-lead text-ink-muted lg:col-span-5">{buktiHero.sub}</p>
+        </Container>
+      </Section>
+
+      <Section id="lapor" tone="sand" className="border-b border-line">
+        <Container>
+          <FormLaporan />
         </Container>
       </Section>
 

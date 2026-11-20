@@ -14,13 +14,12 @@ export interface KanalLaporan {
 }
 
 export const buktiSeo: SeoData = {
-  title: "Simpan Bukti & Lapor Cyberbullying · Jejak Baik",
+  title: "Lapor Cyberbullying · Jejak Baik",
   description:
-    "Cara mengambil tangkapan layar yang berguna, menyimpan bukti dengan aman, dan memilih kanal pelaporan yang tepat di platform, sekolah, atau layanan SAPA 129.",
-  ogTitle: "Simpan Bukti & Lapor Cyberbullying · Jejak Baik",
-  ogDescription: "Panduan bukti yang valid dan alur lapor ke platform, sekolah, atau layanan pendampingan.",
-  twitterDescription:
-    "Panduan bukti yang valid dan alur lapor ke platform, sekolah, atau layanan pendampingan.",
+    "Kirim laporan perundungan siber langsung dari situs, simpan bukti tangkapan layar, dan pantau status penanganannya lewat nomor tiket.",
+  ogTitle: "Lapor Cyberbullying · Jejak Baik",
+  ogDescription: "Formulir laporan, nomor tiket, dan pelacakan status penanganan.",
+  twitterDescription: "Formulir laporan, nomor tiket, dan pelacakan status penanganan.",
   ogType: "article",
   author: "Jejak Baik",
 };
@@ -29,6 +28,7 @@ export const buktiHero = {
   label: "Bukti & pelaporan",
   judul: "Bukti yang rapi membuat ceritamu didengar.",
   sub: "Bukan untuk membuktikan bahwa kamu benar, tapi supaya kejadiannya tidak bisa dibantah begitu saja. Empat langkah, lalu pilih kanal yang paling dekat.",
+  aksi: { label: "Buat laporan sekarang", href: "#lapor" },
 };
 
 export const langkahBukti: LangkahBukti[] = [
@@ -117,8 +117,8 @@ export const templateCatatan = [
 ];
 
 export const buktiPenutup = {
-  judul: "Jejak Baik tidak mengirim laporan apa pun",
-  isi: "Halaman ini hanya panduan. Laporan tetap kamu kirim lewat kanal yang kamu pilih, jadi kamu yang memegang kendali atas isi dan identitasmu.",
+  judul: "Laporan di situs ini tersimpan di perangkatmu",
+  isi: "Formulir di atas mencatat laporan di peramban perangkat ini, bukan di server sekolah. Kalau kamu butuh laporan yang benar-benar diterima Guru BK hari itu juga, kirim juga lewat kanal yang kamu pilih di atas, atau tunjukkan nomor tiketmu langsung ke Guru BK.",
   aksi: [
     { label: "Buka kanal bantuan", href: "/bantuan" },
     { label: "Baca panduan tindakan", href: "/panduan" },

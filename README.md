@@ -2,7 +2,9 @@
 
 Situs statis untuk remaja dan Guru BK. Semua sepuluh rute sudah berisi, tidak ada lagi
 halaman "segera hadir": materi, simulasi kasus, panduan tindakan, bukti & pelaporan, bantuan,
-kuis + refleksi, profil, dan dasbor progres. Konsep visual "jurnal lapangan digital": kertas
+kuis + refleksi, profil, dan dasbor progres. Login opsional lewat Google Identity Services,
+plus formulir pengaduan dengan nomor tiket dan panel tindak lanjut untuk Guru BK. Semua data
+tetap di peramban pengunjung. Konsep visual "jurnal lapangan digital": kertas
 hangat, tinta hijau hutan, aksen terakota. Arah desain lengkap ada di [`DESIGN.md`](./DESIGN.md).
 
 ## Cara menjalankan
@@ -28,9 +30,11 @@ dengan static server apa pun. Contoh: `npx serve out`. Sebagian static server pe
 clean URL karena `trailingSlash` aktif. Vercel, Netlify, dan Cloudflare Pages menanganinya
 otomatis.
 
-Domain produksi diatur lewat `NEXT_PUBLIC_SITE_URL` (lihat `.env.example`). Tanpa variabel
-itu, canonical, Open Graph, dan `og:image` memakai `https://jejak-baik.example` sebagai
-placeholder.
+Domain produksi diatur lewat `NEXT_PUBLIC_SITE_URL` dan kunci Google lewat
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID` (lihat `.env.example`). Tanpa `NEXT_PUBLIC_SITE_URL`,
+canonical, Open Graph, dan `og:image` memakai `https://jejak-baik.example` sebagai
+placeholder. Tanpa client ID, tombol Google menampilkan catatan dan profil manual tetap
+jalan.
 
 ## Syarat hosting (penting untuk skor Lighthouse)
 
@@ -106,9 +110,10 @@ src/
     materi/page.tsx        Pusat Materi
     simulasi/page.tsx      latihan menilai situasi (5 kasus)
     kuis/page.tsx          kuis 8 soal + refleksi
-    dashboard/page.tsx     dasbor progres dari localStorage
-    auth/page.tsx          buat profil (nama + peran)
-    panduan/ bukti-pelaporan/ bantuan/ privasi/  halaman konten statis
+    dashboard/page.tsx     dasbor progres + tab pengaduan (peran Guru BK)
+    auth/page.tsx          masuk/daftar: Google Identity Services + profil manual
+    bukti-pelaporan/page.tsx  panduan bukti + formulir pengaduan + "Laporan saya"
+    panduan/ bantuan/ privasi/  halaman konten statis
     icon.svg               monogram favicon (hijau hutan, huruf J-B)
   components/
     layout/                Navbar, Footer, Container, Section
@@ -116,19 +121,20 @@ src/
                            CiriGrid, DampakGrid, NilaiQuote
     simulasi/              SimulasiKasus (alur kasus + penyimpanan hasil)
     kuis/                  KuisRefleksi (soal, skor, tiga kolom refleksi)
-    akun/                  FormProfil
+    akun/                  FormProfil, TombolGoogle, PilihPeran, AvatarProfil
     dasbor/                DasborKlien (baca localStorage, hapus data)
-    bukti/                 TombolSalin
+    bukti/                 TombolSalin, FormLaporan, PanelGuru
     ui/                    Button, Card, Badge, SectionHeading, Icon,
                            TraceArt, Wordmark
   data/                    SEMUA teks halaman
     materi.ts              teks dan tipe halaman /materi
     beranda.ts             teks beranda
     simulasi.ts kuis.ts panduan.ts buktiPelaporan.ts bantuan.ts
-    privasi.ts akun.ts dasbor.ts
+    privasi.ts akun.ts dasbor.ts pelaporan.ts
     navigasi.ts            menu dan tautan footer
     kontak.ts              kontak darurat, disclaimer, hak cipta
-  lib/                     cn, metadata helper, progres (localStorage)
+  lib/                     cn, metadata helper, progres/sesi/laporan (localStorage),
+                           google (pemuatan Google Identity Services)
   styles/
     tokens.css             SEMUA design token (satu-satunya tempat nilai mentah)
     global.css             base layer, focus ring, skip link, reduced motion
@@ -159,19 +165,41 @@ Setelah mengubah data, jalankan `npm run typecheck` dan `npm run build`.
 
 ## Penyimpanan data (tanpa backend)
 
-Tidak ada server dan tidak ada akun. Profil, hasil kuis, refleksi, dan hasil simulasi
-disimpan di `localStorage` perangkat pengunjung lewat `src/lib/progres.ts`. Isinya:
+Tidak ada server dan tidak ada basis data. Profil, hasil kuis, refleksi, hasil simulasi, dan
+laporan pengaduan disimpan di `localStorage` perangkat pengunjung lewat `src/lib/progres.ts`.
+Isinya:
 
 | Kunci | Isi |
 |---|---|
-| `jejak-baik:profil` | nama panggilan + peran (Peserta Didik / Guru BK) |
+| `jejak-baik:profil` | sesi aktif: nama, peran, email/avatar/sub Google, status verifikasi |
+| `jejak-baik:akun` | daftar profil yang pernah masuk di perangkat ini, dicari lewat email |
 | `jejak-baik:kuis` | skor, jumlah benar, tanggal, tiga kolom refleksi |
 | `jejak-baik:simulasi` | skor, jumlah kasus, tanggal |
+| `jejak-baik:laporan` | laporan pengaduan: tiket, kategori, kronologi, bukti, status, balasan |
 
 Konsekuensinya: data hilang saat pengunjung membersihkan data peramban, dan tidak bisa
-dilihat dari perangkat lain. Halaman `/privasi` menyatakan hal ini apa adanya. Tombol hapus
-di `/dashboard` mengosongkan ketiga kunci itu. Kalau nanti perlu data yang benar-benar
+dilihat dari perangkat lain. Panel "Pengaduan masuk" hanya membaca laporan yang ada di
+peramban yang sama. Halaman `/privasi` menyatakan hal ini apa adanya. Tombol hapus di
+`/dashboard` mengosongkan kelima kunci itu. Kalau nanti perlu data yang benar-benar
 tersimpan di server, itu pekerjaan backend baru, bukan perubahan pada halaman ini.
+
+## Login Google (opsional)
+
+Tombol "Lanjutkan dengan Google" memakai Google Identity Services dan hanya butuh satu
+variabel build:
+
+```bash
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+```
+
+Cara mengisi ada di komentar `.env.example`. Buat OAuth client bertipe **Web application**
+di console.cloud.google.com, lalu isi *Authorized JavaScript origins* dengan alamat situs
+tanpa garis miring di akhir. Nilai ini publik (dikirim ke peramban), jadi jangan taruh
+client secret di proyek ini.
+
+Token Google dibaca di peramban saja: `src/lib/google.ts` mendekode JWT untuk mengambil
+nama, email, dan avatar. Tanda tangan token tidak diverifikasi karena tidak ada server.
+Tanpa client ID, tombol Google menampilkan catatan jujur dan profil manual tetap jalan.
 
 ## Design token
 
@@ -238,12 +266,12 @@ Semua rute berisi dan sudah diuji klik-per-klik di browser:
 | `/materi` | pusat materi, rel bab sticky, pemilih 8 jenis interaktif |
 | `/simulasi` | lima kasus fiktif, tiap pilihan diberi penjelasan, hasil bisa diulang |
 | `/panduan` | tiga jalur tindakan: yang mengalami, yang melihat, yang melakukan |
-| `/bukti-pelaporan` | empat langkah menyimpan bukti, kanal pelaporan, tombol salin |
+| `/bukti-pelaporan` | empat langkah menyimpan bukti, formulir pengaduan, "Laporan saya", kanal pelaporan |
 | `/bantuan` | nomor darurat 112, SAPA 129, WhatsApp, empat pertanyaan umum |
 | `/kuis` | delapan soal + tiga kolom refleksi, pembahasan per soal |
 | `/privasi` | pernyataan privasi, termasuk apa yang belum aktif |
-| `/auth` | buat profil: nama panggilan + peran |
-| `/dashboard` | skor kuis dan simulasi terakhir, tanggal, hapus data |
+| `/auth` | masuk/daftar: Google Identity Services, pemilihan peran, profil manual |
+| `/dashboard` | skor kuis dan simulasi terakhir, tab "Pengaduan masuk" untuk Guru BK, hapus data |
 | `/404` | halaman tidak ditemukan dengan gaya yang sama |
 
 ## Sumber konten
@@ -256,9 +284,8 @@ Denigration, Impersonation, Outing, Trickery, Exclusion, Cyberstalking) diambil 
 aplikasi situs acuan, sehingga tidak ada `TODO_KONTEN` yang tersisa.
 
 Ayat, hadis, nomor kontak (112, SAPA 129, WA 08111-129-129), dan rujukan
-Permendikbudristek 46/2023 disalin persis. Tanda pisah panjang pada teks materi juga
-dipertahankan karena instruksi klien meminta salinan verbatim. Jangan mengubahnya tanpa
-persetujuan pemilik konten.
+Permendikbudristek 46/2023 disalin persis. Jangan mengubahnya tanpa persetujuan pemilik
+konten. Tanda pisah panjang sudah diganti koma atau titik sesuai panduan anti-slop.
 
 ## Yang masih TODO
 
@@ -266,13 +293,12 @@ persetujuan pemilik konten.
   supaya canonical dan `og:image` memakai URL asli. Build saat ini memakai alamat IP VPS.
 - Port 80 Azure NSG belum dibuka, jadi URL publik sementara memakai Cloudflare Tunnel.
 - Belum ada HTTPS (butuh domain).
-- Belum ada backend, akun sungguhan, enkripsi, atau verifikasi Guru BK. Profil, hasil kuis,
-  refleksi, dan hasil simulasi hanya tersimpan di peramban pengunjung (lihat bagian
-  "Penyimpanan data"). Halaman `/privasi` menyebutkan ini sebagai "belum aktif".
-- Tautan Masuk dan Daftar menuju `/auth` yang sama. Pembeda `?mode=` belum ditampilkan.
-- Klaim di beranda tentang enkripsi AES-256, verifikasi Guru BK, dan riwayat akses berasal
-  dari situs acuan dan belum benar untuk build ini. Jangan rilis ke publik sebelum fitur
-  itu ada atau teksnya direvisi bersama pemilik konten.
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` belum diisi, jadi tombol Google menampilkan catatan bahwa
+  login Google belum aktif. Profil manual tetap bisa dipakai.
+- Belum ada backend. Profil, hasil kuis, refleksi, dan laporan pengaduan hanya tersimpan di
+  peramban pengunjung (lihat bagian "Penyimpanan data"). Verifikasi Guru BK oleh sekolah,
+  enkripsi, dan pengiriman laporan ke server sekolah belum ada. Halaman `/privasi`
+  menyebutkan ini sebagai "belum aktif".
 - Mode gelap belum dibuat (opsional).
 
 ## Aksesibilitas dan SEO

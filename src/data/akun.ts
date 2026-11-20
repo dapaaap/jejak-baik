@@ -16,11 +16,11 @@ export const akunHero = {
   labelMasuk: "Lanjutkan",
   judulDaftar: "Mulai dari namamu.",
   judulMasuk: "Lanjutkan belajarmu.",
-  sub: "Profil ini bukan akun daring. Isinya hanya nama panggilan dan peran, disimpan di peramban ini supaya Dasbor bisa menyapamu dan menyimpan hasil latihan.",
+  sub: "Profil ini tersimpan di peramban ini, bukan di server Jejak Baik. Isi manual, atau pakai akun Google supaya nama dan avatarmu langsung terisi.",
   catatan: [
-    "Tidak perlu kata sandi, karena tidak ada data yang dikirim ke server.",
-    "Jangan tulis nama lengkap, nomor telepon, atau alamat.",
-    "Kalau memakai komputer bersama, hapus profil setelah selesai.",
+    "Tidak ada kata sandi Jejak Baik. Google hanya dipakai untuk nama, email, dan avatar.",
+    "Jangan tulis nama lengkap, nomor telepon, atau alamat di profil manual.",
+    "Kalau memakai komputer bersama, keluar dan hapus profil setelah selesai.",
   ],
 };
 
@@ -43,4 +43,24 @@ export const akunTersimpan = {
   hapus: "Hapus profil",
   lanjut: "Buka dasbor",
   sukses: "Profil tersimpan di perangkat ini.",
+};
+
+export const akunGoogle = {
+  judul: "Masuk dengan Google",
+  sub: "Google hanya memberi nama, email, dan avatar. Tidak ada kata sandi Jejak Baik dan tidak ada data yang dikirim ke server kami.",
+  atau: "atau isi profil manual",
+  manual: "Isi profil manual",
+  kembali: "Kembali ke tombol Google",
+  memuat: "Menyiapkan tombol Google...",
+  gagal: "Tombol Google tidak bisa dimuat. Periksa koneksi, lalu muat ulang halaman.",
+  belumAktif:
+    "Login Google belum aktif di build ini karena NEXT_PUBLIC_GOOGLE_CLIENT_ID belum diisi. Sementara itu, profil manual tetap bisa dipakai.",
+  peranJudul: "Pilih peranmu",
+  peranSub:
+    "Peran menentukan isi Dasbor. Akun Guru BK ditandai menunggu verifikasi sampai sekolah memeriksanya.",
+  lanjut: "Simpan dan buka dasbor",
+  keluar: "Keluar",
+  menunggu: "Menunggu verifikasi",
+  terverifikasi: "Guru BK",
+  akunLain: "Masuk dengan akun Google lain",
 };

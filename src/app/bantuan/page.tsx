@@ -25,7 +25,12 @@ export default function BantuanPage() {
             <Eyebrow>{bantuanHero.label}</Eyebrow>
             <h1 className="mt-6 max-w-3xl text-display font-medium">{bantuanHero.judul}</h1>
           </div>
-          <p className="max-w-measure text-lead text-ink-muted lg:col-span-5">{bantuanHero.sub}</p>
+          <div className="lg:col-span-5">
+            <p className="max-w-measure text-lead text-ink-muted">{bantuanHero.sub}</p>
+            <div className="mt-5">
+              <ButtonLink href="/bukti-pelaporan#lapor">Buat laporan sekarang</ButtonLink>
+            </div>
+          </div>
         </Container>
       </Section>
 

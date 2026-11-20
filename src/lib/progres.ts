@@ -7,6 +7,10 @@ export type Peran = "didik" | "guru";
 export interface Profil {
   nama: string;
   peran: Peran;
+  email?: string;
+  avatar?: string;
+  sub?: string;
+  statusVerifikasi?: "menunggu" | "terverifikasi";
 }
 
 export interface HasilKuis {
@@ -24,8 +28,10 @@ export interface HasilSimulasi {
 
 export const kunciProgres = {
   profil: "jejak-baik:profil",
+  akun: "jejak-baik:akun",
   kuis: "jejak-baik:kuis",
   simulasi: "jejak-baik:simulasi",
+  laporan: "jejak-baik:laporan",
 } as const;
 
 export function bacaProgres<T>(kunci: string): T | null {
@@ -40,12 +46,14 @@ export function bacaProgres<T>(kunci: string): T | null {
   }
 }
 
-export function simpanProgres(kunci: string, nilai: unknown) {
+export function simpanProgres(kunci: string, nilai: unknown): boolean {
   try {
     window.localStorage.setItem(kunci, JSON.stringify(nilai));
+    return true;
   } catch {
     // shortcut: kegagalan simpan (kuota penuh / storage diblokir) tidak dilaporkan ke UI,
-    // halaman tetap jalan. Tambah pesan gagal kalau nanti ada pengguna yang benar-benar kena.
+    // halaman tetap jalan. Pemanggil yang perlu tahu (laporan) memakai nilai kembalian ini.
+    return false;
   }
 }
 

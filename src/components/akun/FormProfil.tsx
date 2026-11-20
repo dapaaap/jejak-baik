@@ -4,22 +4,22 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { Eyebrow } from "@/components/ui/SectionHeading";
-import { akunHero, akunTersimpan, pilihanPeran } from "@/data/akun";
-import {
-  bacaProgres,
-  hapusProgres,
-  kunciProgres,
-  simpanProgres,
-  type Peran,
-  type Profil,
-} from "@/lib/progres";
+import { AvatarProfil } from "@/components/akun/AvatarProfil";
+import { PilihPeran } from "@/components/akun/PilihPeran";
+import { TombolGoogle } from "@/components/akun/TombolGoogle";
+import { akunGoogle, akunHero, akunTersimpan, pilihanPeran } from "@/data/akun";
+import type { AkunGoogle } from "@/lib/google";
+import { hapusProgres, kunciProgres, type Peran, type Profil } from "@/lib/progres";
+import { akhiriSesi, akunTerdaftar, kabariSesi, mulaiSesi, sesiAktif } from "@/lib/sesi";
 
 export function FormProfil() {
   const mode = useSearchParams().get("mode") === "masuk" ? "masuk" : "daftar";
 
   const [memuat, setMemuat] = useState(true);
   const [profil, setProfil] = useState<Profil | null>(null);
+  const [calon, setCalon] = useState<AkunGoogle | null>(null);
   const [mengubah, setMengubah] = useState(false);
   const [nama, setNama] = useState("");
   const [peran, setPeran] = useState<Peran>("didik");
@@ -27,20 +27,24 @@ export function FormProfil() {
   const [status, setStatus] = useState<"idle" | "ok" | "gagal">("idle");
 
   useEffect(() => {
-    try {
-      const tersimpan = bacaProgres<Profil>(kunciProgres.profil);
-      if (tersimpan) {
-        setProfil(tersimpan);
-        setNama(tersimpan.nama);
-        setPeran(tersimpan.peran);
-      }
-    } catch {
-      setStatus("gagal");
-    }
+    setProfil(sesiAktif());
     setMemuat(false);
   }, []);
 
-  function simpan(event: React.FormEvent<HTMLFormElement>) {
+  function pakaiGoogle(akun: AkunGoogle) {
+    const terdaftar = akunTerdaftar(akun.email);
+
+    if (terdaftar) {
+      mulaiSesi(terdaftar);
+      setProfil(terdaftar);
+      setGalat("");
+      return;
+    }
+
+    setCalon(akun);
+  }
+
+  function simpanManual(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const bersih = nama.trim();
 
@@ -49,33 +53,52 @@ export function FormProfil() {
       return;
     }
 
-    try {
-      const baru: Profil = { nama: bersih, peran };
-      simpanProgres(kunciProgres.profil, baru);
-      setProfil(baru);
-      setNama(bersih);
-      setGalat("");
-      setStatus("ok");
-      setMengubah(false);
-    } catch {
-      setStatus("gagal");
-    }
-  }
+    const baru: Profil = {
+      nama: bersih,
+      peran,
+      email: profil?.email,
+      avatar: profil?.avatar,
+      sub: profil?.sub,
+      statusVerifikasi: peran === "guru" ? (profil?.statusVerifikasi ?? "menunggu") : undefined,
+    };
 
-  function hapus() {
-    try {
-      hapusProgres(kunciProgres.profil);
-    } catch {
+    if (!mulaiSesi(baru)) {
       setStatus("gagal");
       return;
     }
 
+    setProfil(baru);
+    setNama(bersih);
+    setMengubah(false);
+    setGalat("");
+    setStatus("ok");
+  }
+
+  function keluar() {
+    window.google?.accounts.id.disableAutoSelect();
+    akhiriSesi();
     setProfil(null);
+    setCalon(null);
+    setMengubah(false);
     setNama("");
     setPeran("didik");
     setStatus("idle");
-    setMengubah(true);
   }
+
+  function hapus() {
+    hapusProgres(kunciProgres.profil);
+    hapusProgres(kunciProgres.akun);
+    kabariSesi();
+    setProfil(null);
+    setCalon(null);
+    setMengubah(false);
+    setNama("");
+    setPeran("didik");
+    setStatus("idle");
+  }
+
+  const labelPeran =
+    pilihanPeran.find((item) => item.id === profil?.peran)?.label ?? "Peserta Didik";
 
   let isi: React.ReactNode;
 
@@ -87,17 +110,45 @@ export function FormProfil() {
         </p>
       </div>
     );
+  } else if (calon) {
+    isi = (
+      <PilihPeran
+        akun={calon}
+        onSelesai={(baru) => {
+          setProfil(baru);
+          setCalon(null);
+          setStatus("ok");
+        }}
+        onBatal={() => setCalon(null)}
+      />
+    );
   } else if (profil && !mengubah) {
-    const labelPeran =
-      pilihanPeran.find((item) => item.id === profil.peran)?.label ?? "Peserta Didik";
-
     isi = (
       <div className="rounded-xl border border-line bg-surface p-6 sm:p-8">
         <p className="text-caption font-semibold uppercase text-accent">
           {akunTersimpan.judul}
         </p>
-        <p className="mt-3 font-display text-h2 font-medium">{profil.nama}</p>
-        <p className="mt-1 text-small text-ink-muted">{labelPeran}</p>
+
+        <div className="mt-4 flex items-center gap-4">
+          <AvatarProfil profil={profil} />
+          <div className="min-w-0">
+            <p className="truncate font-display text-h2 font-medium">{profil.nama}</p>
+            <p className="truncate text-small text-ink-muted">{labelPeran}</p>
+            {profil.email ? (
+              <p className="truncate text-small text-ink-muted">{profil.email}</p>
+            ) : null}
+          </div>
+        </div>
+
+        {profil.peran === "guru" ? (
+          <div className="mt-4">
+            <Badge>
+              {profil.statusVerifikasi === "menunggu"
+                ? akunGoogle.menunggu
+                : akunGoogle.terverifikasi}
+            </Badge>
+          </div>
+        ) : null}
 
         {status === "ok" ? (
           <p role="status" className="mt-4 text-small text-success">
@@ -112,9 +163,21 @@ export function FormProfil() {
           >
             {akunTersimpan.lanjut}
           </Link>
-          <Button variant="secondary" onClick={() => setMengubah(true)}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setNama(profil.nama);
+              setPeran(profil.peran);
+              setMengubah(true);
+            }}
+          >
             {akunTersimpan.ubah}
           </Button>
+          {profil.email ? (
+            <Button variant="secondary" onClick={keluar}>
+              {akunGoogle.keluar}
+            </Button>
+          ) : null}
           <Button variant="secondary" onClick={hapus}>
             {akunTersimpan.hapus}
           </Button>
@@ -123,80 +186,101 @@ export function FormProfil() {
     );
   } else {
     isi = (
-      <form onSubmit={simpan} className="rounded-xl border border-line bg-surface p-6 sm:p-8">
-        <div>
-          <label htmlFor="nama-panggilan" className="text-small font-semibold">
-            Nama panggilan
-          </label>
-          <p className="mt-1 text-caption text-ink-soft">
-            Cukup nama yang biasa dipakai di kelas. Jangan tulis nama lengkap.
-          </p>
-          <input
-            id="nama-panggilan"
-            name="nama"
-            type="text"
-            value={nama}
-            onChange={(event) => setNama(event.target.value)}
-            maxLength={40}
-            autoComplete="off"
-            aria-describedby={galat ? "galat-nama" : undefined}
-            aria-invalid={galat ? true : undefined}
-            className="mt-2 w-full rounded-md border border-line-strong bg-paper px-3 py-2.5 text-body text-ink"
-            placeholder="Misalnya Rani"
-          />
-        </div>
-
-        <fieldset className="mt-6">
-          <legend className="text-small font-semibold">Peran</legend>
-          <div className="mt-2 space-y-2.5">
-            {pilihanPeran.map((item) => (
-              <label
-                key={item.id}
-                className={
-                  peran === item.id
-                    ? "flex min-h-11 cursor-pointer gap-3 rounded-md border border-forest bg-paper-deep p-3.5"
-                    : "flex min-h-11 cursor-pointer gap-3 rounded-md border border-line bg-paper p-3.5 hover:border-line-strong"
-                }
-              >
-                <input
-                  type="radio"
-                  name="peran"
-                  value={item.id}
-                  checked={peran === item.id}
-                  onChange={() => setPeran(item.id)}
-                  className="mt-1 h-4 w-4 shrink-0 accent-forest"
-                />
-                <span>
-                  <span className="block text-small font-semibold">{item.label}</span>
-                  <span className="mt-0.5 block text-small text-ink-muted">{item.deskripsi}</span>
-                </span>
-              </label>
-            ))}
+      <div className="grid gap-6">
+        <div className="rounded-xl border border-line bg-surface p-6 sm:p-8">
+          <h2 className="text-h3 font-semibold">{akunGoogle.judul}</h2>
+          <p className="mt-2 max-w-measure text-small text-ink-muted">{akunGoogle.sub}</p>
+          <div className="mt-4">
+            <TombolGoogle onSukses={pakaiGoogle} />
           </div>
-        </fieldset>
-
-        {galat ? (
-          <p id="galat-nama" role="alert" className="mt-4 text-small font-medium text-danger">
-            {galat}
-          </p>
-        ) : null}
-
-        {status === "gagal" ? (
-          <p role="alert" className="mt-4 text-small font-medium text-danger">
-            Peramban menolak menyimpan. Coba matikan mode penyamaran atau izinkan penyimpanan
-            situs ini.
-          </p>
-        ) : null}
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button type="submit">Simpan profil</Button>
-          {profil && mengubah ? (
-            <Button variant="secondary" onClick={() => setMengubah(false)}>
-              Batal
-            </Button>
-          ) : null}
         </div>
-      </form>
+
+        <form
+          onSubmit={simpanManual}
+          className="rounded-xl border border-line bg-surface p-6 sm:p-8"
+        >
+          <p className="text-caption font-semibold uppercase text-accent">{akunGoogle.atau}</p>
+
+          {profil?.email ? (
+            <p className="mt-2 text-small text-ink-muted">
+              Akun Google {profil.email} tetap terhubung ke profil ini.
+            </p>
+          ) : null}
+
+          <div className="mt-4">
+            <label htmlFor="nama-panggilan" className="text-small font-semibold">
+              Nama panggilan
+            </label>
+            <p className="mt-1 text-caption text-ink-soft">
+              Cukup nama yang biasa dipakai di kelas. Jangan tulis nama lengkap.
+            </p>
+            <input
+              id="nama-panggilan"
+              name="nama"
+              type="text"
+              value={nama}
+              onChange={(event) => setNama(event.target.value)}
+              maxLength={40}
+              autoComplete="off"
+              aria-describedby={galat ? "galat-nama" : undefined}
+              aria-invalid={galat ? true : undefined}
+              className="mt-2 w-full rounded-md border border-line-strong bg-paper px-3 py-2.5 text-body text-ink"
+              placeholder="Misalnya Rani"
+            />
+          </div>
+
+          <fieldset className="mt-6">
+            <legend className="text-small font-semibold">Peran</legend>
+            <div className="mt-2 space-y-2.5">
+              {pilihanPeran.map((item) => (
+                <label
+                  key={item.id}
+                  className={
+                    peran === item.id
+                      ? "flex min-h-11 cursor-pointer gap-3 rounded-md border border-forest bg-paper-deep p-3.5"
+                      : "flex min-h-11 cursor-pointer gap-3 rounded-md border border-line bg-paper p-3.5 hover:border-line-strong"
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="peran"
+                    value={item.id}
+                    checked={peran === item.id}
+                    onChange={() => setPeran(item.id)}
+                    className="mt-1 h-4 w-4 shrink-0 accent-forest"
+                  />
+                  <span>
+                    <span className="block text-small font-semibold">{item.label}</span>
+                    <span className="mt-0.5 block text-small text-ink-muted">{item.deskripsi}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          {galat ? (
+            <p id="galat-nama" role="alert" className="mt-4 text-small font-medium text-danger">
+              {galat}
+            </p>
+          ) : null}
+
+          {status === "gagal" ? (
+            <p role="alert" className="mt-4 text-small font-medium text-danger">
+              Peramban menolak menyimpan. Coba matikan mode penyamaran atau izinkan penyimpanan
+              situs ini.
+            </p>
+          ) : null}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button type="submit">Simpan profil</Button>
+            {mengubah && profil ? (
+              <Button variant="secondary" onClick={() => setMengubah(false)}>
+                Batal
+              </Button>
+            ) : null}
+          </div>
+        </form>
+      </div>
     );
   }
 

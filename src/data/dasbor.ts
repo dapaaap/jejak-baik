@@ -48,7 +48,7 @@ export const dasborKartu = {
 
 export const dasborHapus = {
   judul: "Hapus data di perangkat ini",
-  isi: "Menghapus profil, hasil kuis, hasil simulasi, dan seluruh refleksi dari peramban ini. Tindakan ini tidak bisa dibatalkan.",
+  isi: "Menghapus profil, daftar akun, hasil kuis, hasil simulasi, seluruh refleksi, dan semua laporan pengaduan dari peramban ini. Tindakan ini tidak bisa dibatalkan.",
   tombol: "Hapus semua data",
   konfirmasi: "Yakin hapus semua data?",
   batal: "Batal",

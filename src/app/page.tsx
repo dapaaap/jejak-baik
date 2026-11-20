@@ -121,9 +121,16 @@ export default function BerandaPage() {
               title={layananBeranda.judul}
               className="lg:col-span-7"
             />
-            <p className="max-w-measure text-lead text-ink-muted lg:col-span-4 lg:col-start-9">
-              {layananBeranda.deskripsi}
-            </p>
+            <div className="lg:col-span-4 lg:col-start-9">
+              <p className="max-w-measure text-lead text-ink-muted">
+                {layananBeranda.deskripsi}
+              </p>
+              <div className="mt-5">
+                <ButtonLink href="/bukti-pelaporan#lapor" variant="secondary">
+                  Buat laporan sekarang
+                </ButtonLink>
+              </div>
+            </div>
           </div>
 
           <ol className="mt-12 border-t border-line">
