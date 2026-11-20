@@ -59,7 +59,7 @@ export function TombolGoogle({ onSukses }: { onSukses: (akun: AkunGoogle) => voi
 
   if (status === "belumAktif") {
     return (
-      <p className="rounded-md border border-line bg-paper-deep p-4 text-small text-ink-muted">
+      <p className="rounded-md border border-line bg-paper-deep p-4 text-small text-ink-muted [overflow-wrap:anywhere]">
         {akunGoogle.belumAktif}
       </p>
     );
