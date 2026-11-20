@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { halamanPlaceholder, type HalamanPlaceholderKey } from "@/data/halaman";
 import type { SeoData } from "@/data/materi";
 
 // TODO(SEO): ganti dengan domain produksi sebelum rilis.
@@ -40,24 +39,4 @@ export function buildMetadata(seo: SeoData, path: string): Metadata {
       images: [ogImage.url],
     },
   };
-}
-
-export function buildPlaceholderMetadata(
-  key: HalamanPlaceholderKey,
-  path: string,
-): Metadata {
-  const halaman = halamanPlaceholder[key];
-
-  return buildMetadata(
-    {
-      title: halaman.seoTitle,
-      description: halaman.seoDescription,
-      ogTitle: halaman.seoTitle,
-      ogDescription: halaman.seoDescription,
-      twitterDescription: halaman.seoDescription,
-      ogType: "website",
-      author: "Jejak Baik",
-    },
-    path,
-  );
 }

@@ -69,7 +69,7 @@ export const layananBeranda = {
     {
       judul: "Kuis & Refleksi",
       deskripsi: "Uji pemahaman dan tulis refleksi perilaku digital secara pribadi.",
-      href: "/dashboard",
+      href: "/kuis",
     },
     {
       judul: "Desk Bantuan",

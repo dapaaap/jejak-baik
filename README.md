@@ -1,8 +1,9 @@
 # Jejak Baik: website edukasi anti-cyberbullying
 
-Situs statis untuk remaja dan Guru BK. Konten final sudah terpasang, dan tahap desain visual
-(Prompt 2) sudah selesai: konsep "jurnal lapangan digital", kertas hangat, tinta hijau hutan,
-aksen terakota. Arah desain lengkap ada di [`DESIGN.md`](./DESIGN.md).
+Situs statis untuk remaja dan Guru BK. Semua sepuluh rute sudah berisi, tidak ada lagi
+halaman "segera hadir": materi, simulasi kasus, panduan tindakan, bukti & pelaporan, bantuan,
+kuis + refleksi, profil, dan dasbor progres. Konsep visual "jurnal lapangan digital": kertas
+hangat, tinta hijau hutan, aksen terakota. Arah desain lengkap ada di [`DESIGN.md`](./DESIGN.md).
 
 ## Cara menjalankan
 
@@ -101,23 +102,33 @@ yang dipakai. Uji ulang prefetch saat menaikkan versi Next.
 ```text
 src/
   app/                     rute App Router, metadata per halaman, root layout
-    materi/page.tsx        halaman Pusat Materi
     page.tsx               beranda
+    materi/page.tsx        Pusat Materi
+    simulasi/page.tsx      latihan menilai situasi (5 kasus)
+    kuis/page.tsx          kuis 8 soal + refleksi
+    dashboard/page.tsx     dasbor progres dari localStorage
+    auth/page.tsx          buat profil (nama + peran)
+    panduan/ bukti-pelaporan/ bantuan/ privasi/  halaman konten statis
     icon.svg               monogram favicon (hijau hutan, huruf J-B)
-    <rute>/page.tsx        halaman placeholder
   components/
-    layout/                Navbar, Footer, Container, Section, PlaceholderPage
+    layout/                Navbar, Footer, Container, Section
     materi/                JenisCyberbullying, JenisSelector, ChapterNav,
                            CiriGrid, DampakGrid, NilaiQuote
+    simulasi/              SimulasiKasus (alur kasus + penyimpanan hasil)
+    kuis/                  KuisRefleksi (soal, skor, tiga kolom refleksi)
+    akun/                  FormProfil
+    dasbor/                DasborKlien (baca localStorage, hapus data)
+    bukti/                 TombolSalin
     ui/                    Button, Card, Badge, SectionHeading, Icon,
                            TraceArt, Wordmark
   data/                    SEMUA teks halaman
     materi.ts              teks dan tipe halaman /materi
     beranda.ts             teks beranda
+    simulasi.ts kuis.ts panduan.ts buktiPelaporan.ts bantuan.ts
+    privasi.ts akun.ts dasbor.ts
     navigasi.ts            menu dan tautan footer
     kontak.ts              kontak darurat, disclaimer, hak cipta
-    halaman.ts             judul dan status halaman placeholder
-  lib/                     cn, metadata helper
+  lib/                     cn, metadata helper, progres (localStorage)
   styles/
     tokens.css             SEMUA design token (satu-satunya tempat nilai mentah)
     global.css             base layer, focus ring, skip link, reduced motion
@@ -138,13 +149,29 @@ persetujuan.
   (`flame`, `chat-repeated`, `smear`, `mask`, `secret`, `trap`, `door`, `eye`).
 - Urutan bab dan teks hero ada di `materiHero`, `bab1`, `bab3`, `bab4`, `materiCta`.
 - Menu utama ada di `navItems` (`src/data/navigasi.ts`). Setiap item harus punya rute nyata.
-  Jangan tambahkan tautan ke halaman yang belum ada.
-- Judul halaman placeholder ada di `src/data/halaman.ts`.
+- Soal simulasi ada di `src/data/simulasi.ts` (lima kasus, tiap pilihan punya umpan balik
+  sendiri). Soal kuis dan pembahasan ada di `src/data/kuis.ts`.
 - Metadata SEO per halaman memakai objek `SeoData` di `src/data/materi.ts` dan
   `src/data/beranda.ts`. `og:image` diisi sekali untuk semua halaman di
   `src/lib/metadata.ts`.
 
 Setelah mengubah data, jalankan `npm run typecheck` dan `npm run build`.
+
+## Penyimpanan data (tanpa backend)
+
+Tidak ada server dan tidak ada akun. Profil, hasil kuis, refleksi, dan hasil simulasi
+disimpan di `localStorage` perangkat pengunjung lewat `src/lib/progres.ts`. Isinya:
+
+| Kunci | Isi |
+|---|---|
+| `jejak-baik:profil` | nama panggilan + peran (Peserta Didik / Guru BK) |
+| `jejak-baik:kuis` | skor, jumlah benar, tanggal, tiga kolom refleksi |
+| `jejak-baik:simulasi` | skor, jumlah kasus, tanggal |
+
+Konsekuensinya: data hilang saat pengunjung membersihkan data peramban, dan tidak bisa
+dilihat dari perangkat lain. Halaman `/privasi` menyatakan hal ini apa adanya. Tombol hapus
+di `/dashboard` mengosongkan ketiga kunci itu. Kalau nanti perlu data yang benar-benar
+tersimpan di server, itu pekerjaan backend baru, bukan perubahan pada halaman ini.
 
 ## Design token
 
@@ -203,22 +230,21 @@ dengan Puppeteer atau `resvg`).
 
 ## Status halaman
 
-Dirancang penuh:
+Semua rute berisi dan sudah diuji klik-per-klik di browser:
 
-- `/` beranda
-- `/materi` pusat materi, termasuk rel bab sticky dan pemilih 8 jenis interaktif
-- `/404` dan halaman placeholder (gaya seragam, tetap menyebut "segera hadir")
-
-Placeholder dengan teks "Segera hadir":
-
-- `/simulasi`
-- `/panduan`
-- `/bukti-pelaporan`
-- `/bantuan`
-- `/kuis`
-- `/privasi`
-- `/auth` (dipakai oleh tautan Masuk dan Daftar)
-- `/dashboard`
+| Rute | Isi |
+|---|---|
+| `/` | beranda |
+| `/materi` | pusat materi, rel bab sticky, pemilih 8 jenis interaktif |
+| `/simulasi` | lima kasus fiktif, tiap pilihan diberi penjelasan, hasil bisa diulang |
+| `/panduan` | tiga jalur tindakan: yang mengalami, yang melihat, yang melakukan |
+| `/bukti-pelaporan` | empat langkah menyimpan bukti, kanal pelaporan, tombol salin |
+| `/bantuan` | nomor darurat 112, SAPA 129, WhatsApp, empat pertanyaan umum |
+| `/kuis` | delapan soal + tiga kolom refleksi, pembahasan per soal |
+| `/privasi` | pernyataan privasi, termasuk apa yang belum aktif |
+| `/auth` | buat profil: nama panggilan + peran |
+| `/dashboard` | skor kuis dan simulasi terakhir, tanggal, hapus data |
+| `/404` | halaman tidak ditemukan dengan gaya yang sama |
 
 ## Sumber konten
 
@@ -240,10 +266,10 @@ persetujuan pemilik konten.
   supaya canonical dan `og:image` memakai URL asli. Build saat ini memakai alamat IP VPS.
 - Port 80 Azure NSG belum dibuka, jadi URL publik sementara memakai Cloudflare Tunnel.
 - Belum ada HTTPS (butuh domain).
-- Belum ada backend, autentikasi, enkripsi, penyimpanan jawaban atau laporan, verifikasi
-  Guru BK, dan riwayat akses. Semua halaman terkait hanya placeholder.
-- Tautan Masuk dan Daftar menuju halaman placeholder yang sama. Pembeda `?mode=` belum
-  ditampilkan.
+- Belum ada backend, akun sungguhan, enkripsi, atau verifikasi Guru BK. Profil, hasil kuis,
+  refleksi, dan hasil simulasi hanya tersimpan di peramban pengunjung (lihat bagian
+  "Penyimpanan data"). Halaman `/privasi` menyebutkan ini sebagai "belum aktif".
+- Tautan Masuk dan Daftar menuju `/auth` yang sama. Pembeda `?mode=` belum ditampilkan.
 - Klaim di beranda tentang enkripsi AES-256, verifikasi Guru BK, dan riwayat akses berasal
   dari situs acuan dan belum benar untuk build ini. Jangan rilis ke publik sebelum fitur
   itu ada atau teksnya direvisi bersama pemilik konten.
@@ -287,3 +313,10 @@ pengukuran paling konservatif. LCP 2,0-2,6 dtk, CLS ≤0,001.
 Diperiksa juga pada 360/768/1280/1536px di 10 rute: tanpa scroll horizontal, tanpa error
 konsol, tidak ada target sentuh di bawah 44px, kontras teks lulus di `/` dan `/materi/`,
 tidak ada pelanggaran label-in-name (WCAG 2.5.3).
+
+Uji klik-per-klik (Puppeteer) dijalankan terhadap build yang sedang live, mencakup: menu
+mobile buka/tutup dengan Escape, simulasi lima kasus sampai hasil lalu diulang, kuis delapan
+soal plus tiga kolom refleksi, validasi nama kosong, simpan profil, skor di dasbor, hapus
+data, umpan balik tombol salin, tautan `tel:112`/`tel:129`/WhatsApp, dan empat item bantuan.
+Semua lulus. Satu-satunya error konsol berasal dari rute `/tidak-ada/` yang memang sengaja
+tidak ada.
