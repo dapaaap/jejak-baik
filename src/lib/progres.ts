@@ -31,22 +31,30 @@ export const kunciProgres = {
 export function bacaProgres<T>(kunci: string): T | null {
   if (typeof window === "undefined") return null;
 
-  const mentah = window.localStorage.getItem(kunci);
-  if (!mentah) return null;
-
   try {
-    return JSON.parse(mentah) as T;
+    const mentah = window.localStorage.getItem(kunci);
+    return mentah ? (JSON.parse(mentah) as T) : null;
   } catch {
+    // Data rusak atau localStorage diblokir: anggap belum ada progres.
     return null;
   }
 }
 
 export function simpanProgres(kunci: string, nilai: unknown) {
-  window.localStorage.setItem(kunci, JSON.stringify(nilai));
+  try {
+    window.localStorage.setItem(kunci, JSON.stringify(nilai));
+  } catch {
+    // shortcut: kegagalan simpan (kuota penuh / storage diblokir) tidak dilaporkan ke UI,
+    // halaman tetap jalan. Tambah pesan gagal kalau nanti ada pengguna yang benar-benar kena.
+  }
 }
 
 export function hapusProgres(kunci: string) {
-  window.localStorage.removeItem(kunci);
+  try {
+    window.localStorage.removeItem(kunci);
+  } catch {
+    // Sama seperti simpan: kegagalan penyimpanan tidak boleh mematikan halaman.
+  }
 }
 
 export function tanggalRingkas(iso: string) {

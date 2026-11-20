@@ -6,10 +6,10 @@ export interface Aksi {
 }
 
 export const berandaSeo: SeoData = {
-  title: "Jejak Baik — Ruang Aman Belajar Anti-Cyberbullying",
+  title: "Jejak Baik | Ruang Aman Belajar Anti-Cyberbullying",
   description:
     "Kenali, cegah, dan tangani cyberbullying lewat materi interaktif, simulasi kasus, kuis, dan rujukan ke Guru BK. Data peserta didik dijaga rahasia.",
-  ogTitle: "Jejak Baik — Ruang Aman Belajar Anti-Cyberbullying",
+  ogTitle: "Jejak Baik | Ruang Aman Belajar Anti-Cyberbullying",
   ogDescription: "Materi, simulasi kasus, kuis, refleksi, dan rujukan profesional untuk remaja.",
   twitterDescription:
     "Materi, simulasi kasus, kuis, refleksi, dan rujukan profesional untuk remaja.",
@@ -21,7 +21,7 @@ export const heroBeranda = {
   label: "Ruang aman untuk remaja Indonesia",
   judulBaris: ["Setiap ketikan", "meninggalkan jejak.", "Pastikan itu baik."],
   deskripsi:
-    "Jejak Baik membantumu mengenali, mencegah, dan menangani cyberbullying — lewat materi interaktif, simulasi kasus, kuis, dan rujukan aman ke Guru BK.",
+    "Jejak Baik membantumu mengenali, mencegah, dan menangani cyberbullying lewat materi interaktif, simulasi kasus, kuis, dan rujukan aman ke Guru BK.",
   aksi: [
     { label: "Daftar gratis", href: "/auth?mode=daftar" },
     { label: "Coba simulasi kasus", href: "/simulasi" },

@@ -46,10 +46,10 @@ export interface NilaiMoral {
 }
 
 export const materiSeo: SeoData = {
-  title: "Pusat Materi Cyberbullying — Jejak Baik",
+  title: "Pusat Materi Cyberbullying | Jejak Baik",
   description:
     "Definisi cyberbullying, 8 jenis menurut klasifikasi Willard, dampak psikososial, serta nilai tabayyun dan menjaga kehormatan sesama.",
-  ogTitle: "Pusat Materi Cyberbullying — Jejak Baik",
+  ogTitle: "Pusat Materi Cyberbullying | Jejak Baik",
   ogDescription: "Pahami jenis, dampak, dan nilai moral untuk mencegah cyberbullying.",
   twitterDescription: "Pahami jenis, dampak, dan nilai moral untuk mencegah cyberbullying.",
   ogType: "article",
@@ -66,7 +66,7 @@ export const bab1 = {
   nomor: 1,
   judul: "Apa itu cyberbullying?",
   definisi:
-    "Cyberbullying (perundungan siber) adalah perilaku menyakiti orang lain secara sengaja dan berulang melalui media digital — chat, media sosial, game online, atau platform lain — di mana ada ketidakseimbangan kekuatan antara pelaku dan korban.",
+    "Cyberbullying (perundungan siber) adalah perilaku menyakiti orang lain secara sengaja dan berulang melalui media digital (chat, media sosial, game online, atau platform lain), di mana ada ketidakseimbangan kekuatan antara pelaku dan korban.",
   ciri: [
     {
       judul: "Disengaja",
@@ -98,7 +98,7 @@ export const bab2 = {
       nama: "Flaming",
       labelSingkat: "Perang kata",
       penjelasan:
-        "Pertengkaran online dengan kata-kata kasar, marah, dan vulgar — sering di kolom komentar atau grup.",
+        "Pertengkaran online dengan kata-kata kasar, marah, dan vulgar, sering di kolom komentar atau grup.",
       contoh: "Membalas komentar dengan makian berantai di grup kelas.",
       ikon: "flame",
     },
@@ -208,7 +208,7 @@ export const bab4 = {
   nilai: [
     {
       referensi: "QS. Al-Hujurat [49]: 6",
-      judul: "Tabayyun — cek & ricek",
+      judul: "Tabayyun: cek & ricek",
       kutipan:
         '"Jika datang kepadamu orang fasik membawa suatu berita, maka periksalah dengan teliti…"',
       praktik:

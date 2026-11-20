@@ -12,7 +12,7 @@ export const kontakDarurat = {
 
 export const footerMerek = {
   deskripsi:
-    "Ruang belajar yang aman bagi remaja untuk mengenali, mencegah, dan menangani cyberbullying — dengan hati, akal sehat, dan nilai kebaikan.",
+    "Ruang belajar yang aman bagi remaja untuk mengenali, mencegah, dan menangani cyberbullying dengan hati, akal sehat, dan nilai kebaikan.",
   disclaimer: [
     { teks: "Jejak Baik adalah media edukasi, " },
     { teks: "bukan alat diagnosis klinis atau layanan konseling darurat", tebal: true },

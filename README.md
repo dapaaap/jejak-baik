@@ -67,7 +67,7 @@ sudo chown -R www-data:www-data /var/www/jejak-baik
 
 Konfigurasi Nginx ada di `/etc/nginx/sites-available/jejak-baik`. Isinya sudah mencakup
 `try_files` untuk `trailingSlash`, `404.html`, gzip, cache `immutable` untuk `/_next/static/`,
-dan `no-cache` untuk HTML — empat syarat di bagian sebelumnya. Setelah mengubah konfigurasi:
+dan `no-cache` untuk HTML, empat syarat di bagian sebelumnya. Setelah mengubah konfigurasi:
 `sudo nginx -t && sudo systemctl reload nginx`.
 
 ### Kalau port 80 masih tertutup
