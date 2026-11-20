@@ -14,6 +14,9 @@ sidik jari, untuk mengingatkan bahwa setiap ketikan meninggalkan bekas.
 
 Tiga kata kunci: **Hangat, Tenang, Terarah.**
 
+Dial: ENERGY 2 / RHYTHM 3 / MOTION 2. Situs memakai satu tema terang karena identitasnya
+adalah kertas jurnal fisik; mode gelap akan menghapus bahan itu, jadi tidak ada tombol tema.
+
 ## 2. Palet
 
 | Token | Hex | Peran | Kontras |

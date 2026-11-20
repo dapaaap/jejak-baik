@@ -23,14 +23,10 @@ export const heroBeranda = {
   deskripsi:
     "Jejak Baik membantumu mengenali, mencegah, dan menangani cyberbullying lewat materi interaktif, simulasi kasus, kuis, dan rujukan aman ke Guru BK.",
   aksi: [
-    { label: "Daftar gratis", href: "/auth?mode=daftar" },
+    { label: "Buat profil belajar", href: "/auth?mode=daftar" },
     { label: "Coba simulasi kasus", href: "/simulasi" },
   ] satisfies Aksi[],
-  jaminan: ["Data terenkripsi", "Hanya kamu & Guru BK", "Terbuka untuk semua"],
-  gambar: {
-    alt: "Sekelompok remaja duduk bersama di bukit sambil melihat ponsel, dengan jejak kaki bercahaya",
-    catatan: "Area gambar hero (TODO: aset dibuat pada Prompt 2)",
-  },
+  jaminan: ["Tersimpan di perangkatmu", "Tanpa akun", "Terbuka untuk semua"],
 };
 
 export const pengingatBeranda = {
@@ -43,7 +39,7 @@ export const layananBeranda = {
   label: "Layanan utama",
   judul: "Semua yang kamu butuhkan untuk berselancar dengan aman",
   deskripsi:
-    "Belajar dengan caramu sendiri. Sebagian besar materi bisa dibuka tanpa akun; kuis, refleksi, dan pelaporan butuh akun agar tersimpan aman.",
+    "Belajar dengan caramu sendiri. Semua halaman bisa dibuka tanpa akun; hasil kuis, refleksi, dan simulasi tersimpan di perangkatmu sendiri.",
   cta: "Buka",
   items: [
     {
@@ -101,29 +97,29 @@ export const pembandingBeranda = {
 };
 
 export const akunBeranda = {
-  label: "Dua jenis akun",
+  label: "Dua jenis peran",
   judul: "Siapa saja boleh bergabung",
   deskripsi:
-    "Saat mendaftar, pilih peranmu. Akun Guru BK diverifikasi terlebih dahulu sebelum dapat mengakses data peserta didik.",
+    "Saat membuat profil, pilih peranmu. Profil hanya tersimpan di perangkat ini, tanpa kata sandi dan tanpa data yang dikirim ke server.",
   peran: [
     {
       judul: "Peserta Didik",
       deskripsi: "Untuk remaja dan siswa yang ingin belajar, berlatih, dan mencari bantuan.",
       items: [
         "Simpan hasil kuis & simulasi",
-        "Jurnal refleksi pribadi terenkripsi",
-        "Lapor kejadian secara rahasia ke Guru BK",
-        "Lihat siapa saja yang pernah membuka datamu",
+        "Tulis refleksi pribadi di perangkatmu",
+        "Latihan menilai situasi lewat lima kasus",
+        "Hapus semua data kapan saja dari dasbor",
       ],
     },
     {
       judul: "Guru BK / Konselor",
-      deskripsi: "Pengelola terverifikasi yang mendampingi dan merujuk peserta didik.",
+      deskripsi: "Pendamping yang bisa memakai materi dan simulasi sebagai bahan pendampingan.",
       items: [
-        "Tinjau & tindak lanjuti laporan",
-        "Pantau perkembangan belajar siswa",
-        "Balas laporan dengan pesan terenkripsi",
-        "Verifikasi akun Guru BK lain",
+        "Pakai materi sebagai bahan diskusi kelas",
+        "Buka panduan untuk korban, saksi, dan pelaku",
+        "Salin langkah pelaporan dan kanal bantuan",
+        "Dampingi siswa tanpa melihat data pribadinya",
       ],
     },
   ],
@@ -132,12 +128,12 @@ export const akunBeranda = {
 export const privasiBeranda = {
   judul: "Rahasiamu tetap rahasia.",
   deskripsi:
-    "Jawaban kuis, refleksi, dan laporanmu hanya bisa dilihat olehmu dan Guru BK yang sudah terverifikasi. Teks pribadi dienkripsi sebelum disimpan, dan setiap kali Guru BK membuka datamu, kamu bisa melihat catatannya.",
+    "Jawaban kuis, refleksi, dan hasil simulasimu disimpan di peramban perangkat ini dan tidak dikirim ke server mana pun. Pakai perangkat sendiri, dan hapus datanya kapan saja dari dasbor.",
   cta: { label: "Baca pernyataan privasi", href: "/privasi" },
   jaminan: [
-    "Enkripsi AES-256 untuk teks pribadi",
-    "Akses berbasis peran yang ketat",
-    "Guru BK wajib diverifikasi",
-    "Riwayat akses data yang transparan",
+    "Data tersimpan di perangkat sendiri",
+    "Tanpa akun dan tanpa kata sandi",
+    "Tidak dikirim ke server mana pun",
+    "Hapus semua data kapan saja",
   ],
 };
