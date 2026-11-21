@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import type { SeoData } from "@/data/materi";
 
-// TODO(SEO): ganti dengan domain produksi sebelum rilis.
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://jejak-baik.example";
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://jejakbaik.my.id";
 
 export const siteIdentity = {
   nama: "Jejak Baik",
