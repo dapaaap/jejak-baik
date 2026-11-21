@@ -5,7 +5,7 @@ import { Section } from "@/components/layout/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { Eyebrow, SectionHeading } from "@/components/ui/SectionHeading";
 import { Icon } from "@/components/ui/Icon";
-import { TraceArt } from "@/components/ui/TraceArt";
+import { Wordmark } from "@/components/ui/Wordmark";
 import {
   akunBeranda,
   berandaSeo,
@@ -83,10 +83,8 @@ export default function BerandaPage() {
             </ul>
           </div>
 
-          <div className="relative animate-rise rounded-xl border border-line bg-surface p-5 shadow-soft sm:p-8">
-            <div className="rounded-lg border border-line bg-paper p-4 sm:p-6">
-              <TraceArt className="mx-auto max-w-md text-forest" />
-            </div>
+          <div className="relative animate-rise rounded-xl border border-line bg-surface px-6 py-12 shadow-soft sm:px-10 sm:py-16">
+            <Wordmark className="mx-auto h-16 sm:h-20" />
           </div>
         </Container>
       </Section>

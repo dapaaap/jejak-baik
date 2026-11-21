@@ -14,7 +14,7 @@ export function Wordmark({ className }: { className?: string }) {
       alt="Jejak Baik"
       width={logo.width}
       height={logo.height}
-      className={cn("h-10 w-auto", className)}
+      className={cn("w-auto", className)}
     />
   );
 }

@@ -63,7 +63,7 @@ export function Navbar() {
           href={navMerek.href}
           className="inline-flex min-h-11 items-center rounded-sm"
         >
-          <Wordmark />
+          <Wordmark className="h-10" />
         </Link>
 
         <nav aria-label="Navigasi utama" className="hidden items-center gap-7 lg:flex">
