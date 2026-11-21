@@ -92,7 +92,7 @@ export function dariServer(laporan: LaporanServer, pemilik: string): Laporan {
   return {
     tiket: laporan.tiket,
     dibuat: laporan.dibuat,
-    pemilik,
+    pemilik: laporan.email || pemilik,
     nama: laporan.nama,
     anonim: laporan.anonim,
     kategori: laporan.kategori,

@@ -38,6 +38,7 @@ export interface BalasanServer {
 export interface LaporanServer {
   tiket: string;
   dibuat: string;
+  email: string;
   nama: string;
   anonim: boolean;
   kategori: string;

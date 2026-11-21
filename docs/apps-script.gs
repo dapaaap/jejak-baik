@@ -301,6 +301,7 @@ function laporanUntukKlien(baris) {
   return {
     tiket: String(baris.tiket),
     dibuat: teks(baris.dibuat),
+    email: anonim ? "" : String(baris.email || ""),
     nama: anonim ? "" : String(baris.nama),
     anonim: anonim,
     kategori: String(baris.kategori),
