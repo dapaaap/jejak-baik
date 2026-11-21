@@ -14,7 +14,7 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <Link href={navMerek.href} className="inline-flex min-h-11 items-center">
-              <Wordmark />
+              <Wordmark className="h-12" />
             </Link>
             <p className="mt-5 max-w-sm text-small text-ink-muted">{footerMerek.deskripsi}</p>
           </div>
