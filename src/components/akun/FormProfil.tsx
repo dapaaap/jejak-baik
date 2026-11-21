@@ -3,16 +3,28 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Eyebrow } from "@/components/ui/SectionHeading";
 import { AvatarProfil } from "@/components/akun/AvatarProfil";
+import {
+  guruKosong,
+  IsianGuru,
+  validasiGuru,
+  type NilaiGuru,
+} from "@/components/akun/IsianGuru";
 import { PilihPeran } from "@/components/akun/PilihPeran";
 import { TombolGoogle } from "@/components/akun/TombolGoogle";
-import { akunGoogle, akunHero, akunTersimpan, pilihanPeran } from "@/data/akun";
+import { akunGuru, akunGoogle, akunHero, akunTersimpan, pilihanPeran } from "@/data/akun";
 import type { AkunGoogle } from "@/lib/google";
+import {
+  panggilSheets,
+  sheetsAktif,
+  type AkunServer,
+  type StatusAkun,
+} from "@/lib/jaringan";
 import { hapusProgres, kunciProgres, type Peran, type Profil } from "@/lib/progres";
-import { akhiriSesi, akunTerdaftar, kabariSesi, mulaiSesi, sesiAktif } from "@/lib/sesi";
+import { akhiriSesi, akunTerdaftar, kabariSesi, mulaiSesi, sesiAktif, tokenAktif } from "@/lib/sesi";
 
 export function FormProfil() {
   const mode = useSearchParams().get("mode") === "masuk" ? "masuk" : "daftar";
@@ -23,28 +35,55 @@ export function FormProfil() {
   const [mengubah, setMengubah] = useState(false);
   const [nama, setNama] = useState("");
   const [peran, setPeran] = useState<Peran>("didik");
+  const [guru, setGuru] = useState<NilaiGuru>(guruKosong);
   const [galat, setGalat] = useState("");
   const [status, setStatus] = useState<"idle" | "ok" | "gagal">("idle");
+  const [mengirim, setMengirim] = useState(false);
+  const [akunServer, setAkunServer] = useState<AkunServer | null>(null);
+  const [memuatServer, setMemuatServer] = useState(false);
+  const [galatServer, setGalatServer] = useState("");
+
+  async function muatServer(aktif: Profil) {
+    if (!sheetsAktif || !aktif.email) return;
+
+    setMemuatServer(true);
+    setGalatServer("");
+
+    try {
+      setAkunServer(await panggilSheets<AkunServer>("aku"));
+    } catch (error) {
+      setGalatServer(
+        error instanceof Error && error.message
+          ? error.message
+          : "Status akun tidak bisa diperiksa.",
+      );
+    } finally {
+      setMemuatServer(false);
+    }
+  }
 
   useEffect(() => {
-    setProfil(sesiAktif());
+    const aktif = sesiAktif();
+    setProfil(aktif);
     setMemuat(false);
+    if (aktif) void muatServer(aktif);
   }, []);
 
   function pakaiGoogle(akun: AkunGoogle) {
     const terdaftar = akunTerdaftar(akun.email);
 
     if (terdaftar) {
-      mulaiSesi(terdaftar);
+      mulaiSesi(terdaftar, akun.token);
       setProfil(terdaftar);
       setGalat("");
+      void muatServer(terdaftar);
       return;
     }
 
     setCalon(akun);
   }
 
-  function simpanManual(event: React.FormEvent<HTMLFormElement>) {
+  async function simpanManual(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const bersih = nama.trim();
 
@@ -53,16 +92,54 @@ export function FormProfil() {
       return;
     }
 
+    setGalat("");
+    let statusServer: StatusAkun | null = null;
+
+    if (peran === "guru" && sheetsAktif) {
+      if (!profil?.email) {
+        setGalat(akunGuru.perluGoogle);
+        return;
+      }
+
+      const salah = validasiGuru(guru);
+      if (salah) {
+        setGalat(salah);
+        return;
+      }
+
+      setMengirim(true);
+
+      try {
+        const hasil = await panggilSheets<{ status: StatusAkun }>("daftarGuru", {
+          sekolah: guru.sekolah.trim(),
+          jabatan: guru.jabatan.trim(),
+        });
+        statusServer = hasil.status;
+      } catch (error) {
+        setGalat(
+          error instanceof Error && error.message ? error.message : akunGuru.gagal,
+        );
+        return;
+      } finally {
+        setMengirim(false);
+      }
+    }
+
     const baru: Profil = {
       nama: bersih,
       peran,
       email: profil?.email,
       avatar: profil?.avatar,
       sub: profil?.sub,
-      statusVerifikasi: peran === "guru" ? (profil?.statusVerifikasi ?? "menunggu") : undefined,
+      statusVerifikasi:
+        peran === "guru"
+          ? statusServer === "disetujui"
+            ? "terverifikasi"
+            : "menunggu"
+          : undefined,
     };
 
-    if (!mulaiSesi(baru)) {
+    if (!mulaiSesi(baru, tokenAktif())) {
       setStatus("gagal");
       return;
     }
@@ -72,6 +149,7 @@ export function FormProfil() {
     setMengubah(false);
     setGalat("");
     setStatus("ok");
+    void muatServer(baru);
   }
 
   function keluar() {
@@ -118,6 +196,7 @@ export function FormProfil() {
           setProfil(baru);
           setCalon(null);
           setStatus("ok");
+          void muatServer(baru);
         }}
         onBatal={() => setCalon(null)}
       />
@@ -141,12 +220,43 @@ export function FormProfil() {
         </div>
 
         {profil.peran === "guru" ? (
-          <div className="mt-4">
-            <Badge>
-              {profil.statusVerifikasi === "menunggu"
-                ? akunGoogle.menunggu
-                : akunGoogle.terverifikasi}
-            </Badge>
+          <div className="mt-4 grid gap-2">
+            {sheetsAktif ? (
+              <Badge>
+                {memuatServer
+                  ? akunGuru.memeriksa
+                  : akunServer?.status === "disetujui"
+                    ? akunGuru.disetujui
+                    : akunServer?.status === "ditolak"
+                      ? akunGuru.ditolak
+                      : akunGuru.menunggu}
+              </Badge>
+            ) : (
+              <Badge>
+                {profil.statusVerifikasi === "menunggu"
+                  ? akunGoogle.menunggu
+                  : akunGoogle.terverifikasi}
+              </Badge>
+            )}
+
+            {sheetsAktif && akunServer?.status === "belum-terdaftar" ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setPeran("guru");
+                  setNama(profil.nama);
+                  setMengubah(true);
+                }}
+              >
+                {akunGuru.lengkapi}
+              </Button>
+            ) : null}
+
+            {galatServer ? (
+              <p role="alert" className="text-small font-medium text-danger">
+                {galatServer}
+              </p>
+            ) : null}
           </div>
         ) : null}
 
@@ -163,6 +273,11 @@ export function FormProfil() {
           >
             {akunTersimpan.lanjut}
           </Link>
+          {akunServer?.peran === "admin" ? (
+            <ButtonLink href="/admin" variant="secondary">
+              {akunTersimpan.admin}
+            </ButtonLink>
+          ) : null}
           <Button
             variant="secondary"
             onClick={() => {
@@ -258,6 +373,21 @@ export function FormProfil() {
             </div>
           </fieldset>
 
+          {peran === "guru" && sheetsAktif ? (
+            <fieldset className="mt-6 rounded-lg border border-line bg-paper p-4">
+              <legend className="px-1 text-small font-semibold">{akunGuru.judul}</legend>
+              <p className="text-small text-ink-muted">{akunGuru.sub}</p>
+
+              {profil?.email ? (
+                <div className="mt-4">
+                  <IsianGuru nilai={guru} onUbah={setGuru} idAwalan="profil-guru" />
+                </div>
+              ) : (
+                <p className="mt-3 text-small font-medium text-danger">{akunGuru.perluGoogle}</p>
+              )}
+            </fieldset>
+          ) : null}
+
           {galat ? (
             <p id="galat-nama" role="alert" className="mt-4 text-small font-medium text-danger">
               {galat}
@@ -272,7 +402,9 @@ export function FormProfil() {
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Button type="submit">Simpan profil</Button>
+            <Button type="submit" disabled={mengirim}>
+              {mengirim ? akunGuru.mengirim : "Simpan profil"}
+            </Button>
             {mengubah && profil ? (
               <Button variant="secondary" onClick={() => setMengubah(false)}>
                 Batal

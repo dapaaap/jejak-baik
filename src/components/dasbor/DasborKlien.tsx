@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { PanelGuru } from "@/components/bukti/PanelGuru";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { pilihanPeran } from "@/data/akun";
-import { dasborHapus, dasborKartu, dasborKosong } from "@/data/dasbor";
+import { dasborAdmin, dasborHapus, dasborKartu, dasborKosong } from "@/data/dasbor";
+import { panggilSheets, sheetsAktif, type AkunServer } from "@/lib/jaringan";
 import {
   bacaProgres,
   hapusProgres,
@@ -25,13 +26,19 @@ export function DasborKlien() {
   const [konfirmasi, setKonfirmasi] = useState(false);
   const [pesan, setPesan] = useState("");
   const [tampilan, setTampilan] = useState<"belajar" | "pengaduan">("belajar");
+  const [akunServer, setAkunServer] = useState<AkunServer | null>(null);
 
   useEffect(() => {
     try {
-      setProfil(bacaProgres<Profil>(kunciProgres.profil));
+      const aktif = bacaProgres<Profil>(kunciProgres.profil);
+      setProfil(aktif);
       setKuis(bacaProgres<HasilKuis>(kunciProgres.kuis));
       setSimulasi(bacaProgres<HasilSimulasi>(kunciProgres.simulasi));
       setStatus("siap");
+
+      if (aktif?.email && sheetsAktif) {
+        panggilSheets<AkunServer>("aku").then(setAkunServer).catch(() => setAkunServer(null));
+      }
     } catch {
       setStatus("galat");
     }
@@ -44,6 +51,9 @@ export function DasborKlien() {
       hapusProgres(kunciProgres.kuis);
       hapusProgres(kunciProgres.simulasi);
       hapusProgres(kunciProgres.laporan);
+      hapusProgres(kunciProgres.token);
+      hapusProgres(kunciProgres.tiket);
+      setAkunServer(null);
       setProfil(null);
       setKuis(null);
       setSimulasi(null);
@@ -81,6 +91,16 @@ export function DasborKlien() {
 
   return (
     <div className="grid gap-8">
+      {akunServer?.peran === "admin" ? (
+        <div className="rounded-xl border border-forest bg-paper-deep p-5 sm:p-6">
+          <p className="text-small font-semibold">{dasborAdmin.judul}</p>
+          <p className="mt-1 max-w-measure text-small text-ink-muted">{dasborAdmin.isi}</p>
+          <ButtonLink href="/admin" className="mt-4">
+            {dasborAdmin.aksi}
+          </ButtonLink>
+        </div>
+      ) : null}
+
       {guru ? (
         <div className="flex flex-wrap gap-2 border-b border-line pb-3">
           <button

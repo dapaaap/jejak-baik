@@ -117,10 +117,16 @@ export const templateCatatan = [
 ];
 
 export const buktiPenutup = {
-  judul: "Laporan di situs ini tersimpan di perangkatmu",
-  isi: "Formulir di atas mencatat laporan di peramban perangkat ini, bukan di server sekolah. Kalau kamu butuh laporan yang benar-benar diterima Guru BK hari itu juga, kirim juga lewat kanal yang kamu pilih di atas, atau tunjukkan nomor tiketmu langsung ke Guru BK.",
+  judul: "Laporan di situs ini masuk ke panel Guru BK",
+  isi: "Formulir di atas mengirim laporan ke Google Sheets sekolah, jadi Guru BK yang sudah disetujui bisa membacanya dari perangkat mereka. Kalau kamu butuh respons hari itu juga, kirim juga lewat kanal yang kamu pilih di atas, atau tunjukkan nomor tiketmu langsung ke Guru BK.",
   aksi: [
     { label: "Buka kanal bantuan", href: "/bantuan" },
     { label: "Baca panduan tindakan", href: "/panduan" },
   ],
+};
+
+export const buktiPenutupLokal = {
+  judul: "Laporan di situs ini tersimpan di perangkatmu",
+  isi: "Formulir di atas mencatat laporan di peramban perangkat ini, bukan di server sekolah. Kalau kamu butuh laporan yang benar-benar diterima Guru BK hari itu juga, kirim juga lewat kanal yang kamu pilih di atas, atau tunjukkan nomor tiketmu langsung ke Guru BK.",
+  aksi: buktiPenutup.aksi,
 };

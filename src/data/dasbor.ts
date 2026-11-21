@@ -46,9 +46,15 @@ export const dasborKartu = {
   },
 };
 
+export const dasborAdmin = {
+  judul: "Akun ini terdaftar sebagai admin sekolah.",
+  isi: "Panel admin berisi seluruh pengaduan dan permintaan akses Guru BK.",
+  aksi: "Buka panel admin",
+};
+
 export const dasborHapus = {
   judul: "Hapus data di perangkat ini",
-  isi: "Menghapus profil, daftar akun, hasil kuis, hasil simulasi, seluruh refleksi, dan semua laporan pengaduan dari peramban ini. Tindakan ini tidak bisa dibatalkan.",
+  isi: "Menghapus profil, daftar akun, hasil kuis, hasil simulasi, seluruh refleksi, dan salinan laporan di peramban ini. Nomor tiket dan kunci akses laporan juga ikut terhapus, jadi salin nomornya dulu kalau masih perlu membukanya. Laporan yang sudah terkirim ke Google Sheets sekolah tetap tersimpan di sana dan hanya bisa dihapus admin. Tindakan ini tidak bisa dibatalkan.",
   tombol: "Hapus semua data",
   konfirmasi: "Yakin hapus semua data?",
   batal: "Batal",

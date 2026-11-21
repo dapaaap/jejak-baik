@@ -2,11 +2,11 @@ import type { StatusLaporan } from "@/lib/laporan";
 
 export const formLaporan = {
   judul: "Formulir pengaduan",
-  sub: "Isi sejelas mungkin. Kamu bisa menyembunyikan namamu dari Guru BK, tetapi laporan tetap terhubung ke akunmu supaya balasannya bisa kamu baca.",
+  sub: "Isi sejelas mungkin. Kamu bisa menyembunyikan namamu dari Guru BK. Nomor tiket dan kunci di peramban ini tetap membuatmu bisa membaca balasannya.",
   identitas: "Identitas pelapor",
   anonim: "Sembunyikan identitas saya dari Guru BK (kirim anonim)",
   anonimCatatan:
-    "Nama dan emailmu tidak ditampilkan di panel Guru BK. Nomor tiket tetap terhubung ke akunmu.",
+    "Nama dan emailmu tidak ikut dikirim. Nomor tiket tetap terhubung ke akunmu supaya balasan bisa kamu baca.",
   kategori: "Jenis kejadian",
   kategoriBantuan: "Sesuai delapan jenis cyberbullying di halaman materi.",
   platform: "Platform",
@@ -16,14 +16,18 @@ export const formLaporan = {
     "Tulis urutan kejadian, siapa yang terlibat, dan apa yang kamu rasakan. Minimal 20 karakter.",
   bukti: "Lampiran bukti",
   buktiBantuan:
-    "Satu gambar JPG, PNG, atau WebP, maksimal 5 MB. Gambar diperkecil dulu sebelum disimpan.",
+    "Satu gambar JPG, PNG, atau WebP, maksimal 5 MB. Gambar diperkecil dulu, lalu disimpan di Google Drive sekolah.",
   kirim: "Kirim laporan",
   kirimUlang: "Kirim laporan lain",
   privasi:
+    "Laporan dikirim ke Google Sheets sekolah supaya Guru BK bisa membuka dan membalasnya dari perangkat mana pun. Lampiran bukti disimpan di Google Drive sekolah. Kalau kamu memilih anonim, nama dan emailmu tidak ikut dikirim.",
+  privasiLokal:
     "Laporan disimpan di peramban perangkat ini, bukan di server sekolah. Guru BK hanya bisa membukanya dari perangkat yang sama. Karena itu, simpan nomor tiket dan tunjukkan laporan ini langsung ke Guru BK.",
-  sukses: "Laporan tercatat di perangkat ini.",
+  sukses: "Laporan terkirim ke Guru BK.",
+  suksesLokal: "Laporan tercatat di perangkat ini.",
   tiketLabel: "Nomor tiket",
-  tiketCatatan: "Simpan nomor ini. Kamu bisa membuka halaman ini lagi untuk melihat status dan balasan.",
+  tiketCatatan:
+    "Simpan nomor ini. Dari peramban ini, halaman ini bisa membuka lagi status dan balasannya.",
 };
 
 export const kategoriLaporan = [
@@ -71,7 +75,8 @@ export const statusLaporan: { id: StatusLaporan; label: string; deskripsi: strin
 
 export const laporanSaya = {
   judul: "Laporan saya",
-  kosong: "Belum ada laporan dari perangkat ini.",
+  kosong: "Belum ada laporan dari peramban ini.",
+  kosongLokal: "Belum ada laporan dari perangkat ini.",
   dibuka: "Dibuka Guru BK",
   belumDibuka: "Belum dibuka Guru BK",
   balasan: "Balasan",
@@ -80,8 +85,10 @@ export const laporanSaya = {
 
 export const panelGuru = {
   judul: "Pengaduan masuk",
-  sub: "Daftar laporan yang tersimpan di perangkat ini. Laporan anonim menyembunyikan nama dan email pelapor.",
-  kosong: "Belum ada laporan masuk di perangkat ini.",
+  sub: "Laporan yang dikirim siswa lewat formulir. Laporan anonim menyembunyikan nama dan email pelapor.",
+  subLokal: "Daftar laporan yang tersimpan di perangkat ini. Laporan anonim menyembunyikan nama dan email pelapor.",
+  kosong: "Belum ada laporan masuk.",
+  kosongLokal: "Belum ada laporan masuk di perangkat ini.",
   pilih: "Buka",
   tutup: "Tutup",
   pelapor: "Pelapor",
@@ -96,6 +103,11 @@ export const panelGuru = {
   dibuka: "Dibuka",
   belumDibuka: "Belum dibuka",
   catatan:
+    "Perubahan status dan balasan langsung tersimpan di Google Sheets sekolah, jadi pelapor melihatnya dari perangkat mana pun.",
+  catatanLokal:
     "Perubahan status dan balasan juga tersimpan di perangkat ini, jadi pelapor hanya melihatnya kalau memakai peramban yang sama.",
-  akses: "Panel ini hanya untuk peran Guru BK / Konselor.",
+  akses: "Panel ini hanya untuk Guru BK yang sudah disetujui admin sekolah.",
+  aksesLokal: "Panel ini hanya untuk peran Guru BK / Konselor.",
+  memuat: "Memeriksa izin akun...",
+  memuatLaporan: "Memuat laporan dari Google Sheets sekolah...",
 };

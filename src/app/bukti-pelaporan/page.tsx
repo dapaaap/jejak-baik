@@ -8,6 +8,7 @@ import { Eyebrow } from "@/components/ui/SectionHeading";
 import {
   buktiHero,
   buktiPenutup,
+  buktiPenutupLokal,
   buktiSeo,
   buktiWajib,
   kanalLaporan,
@@ -15,11 +16,14 @@ import {
   templateCatatan,
   templateLaporan,
 } from "@/data/buktiPelaporan";
+import { sheetsAktif } from "@/lib/jaringan";
 import { buildMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = buildMetadata(buktiSeo, "/bukti-pelaporan");
 
 export default function BuktiPelaporanPage() {
+  const penutup = sheetsAktif ? buktiPenutup : buktiPenutupLokal;
+
   return (
     <>
       <Section className="border-b border-line">
@@ -159,12 +163,12 @@ export default function BuktiPelaporanPage() {
         <Container className="grid gap-8 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
             <h2 id="bukti-penutup" className="text-h1 font-medium text-paper">
-              {buktiPenutup.judul}
+              {penutup.judul}
             </h2>
-            <p className="mt-4 max-w-measure text-lead text-paper-muted">{buktiPenutup.isi}</p>
+            <p className="mt-4 max-w-measure text-lead text-paper-muted">{penutup.isi}</p>
           </div>
           <div className="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
-            {buktiPenutup.aksi.map((aksi, index) => (
+            {penutup.aksi.map((aksi, index) => (
               <ButtonLink
                 key={aksi.href}
                 href={aksi.href}

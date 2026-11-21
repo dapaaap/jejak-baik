@@ -1,8 +1,9 @@
 /**
  * Google Identity Services dimuat hanya saat halaman akun dibuka, bukan di <head>.
- * Kredensial yang diterima adalah JWT yang sudah ditandatangani Google. Situs ini
- * statis, jadi isinya hanya dibaca di peramban: tidak ada verifikasi tanda tangan
- * di server. Jangan pakai data ini sebagai bukti identitas resmi.
+ * Kredensial yang diterima adalah JWT yang sudah ditandatangani Google. Isinya
+ * dibaca di peramban hanya untuk menampilkan nama, email, dan avatar. Untuk
+ * tindakan yang perlu izin (panel admin, pendaftaran Guru BK), token asli ikut
+ * dikirim ke Apps Script dan diperiksa tanda tangannya di sana.
  */
 
 export interface AkunGoogle {
@@ -10,6 +11,8 @@ export interface AkunGoogle {
   email: string;
   nama: string;
   avatar: string;
+  /** Token asli dari Google. Dikirim ke Apps Script untuk diperiksa di sana. */
+  token: string;
 }
 
 interface GoogleIdentity {
@@ -80,6 +83,7 @@ export function bacaCredential(credential: string): AkunGoogle | null {
       email: data.email,
       nama: data.name?.trim() || data.email.split("@")[0],
       avatar: data.picture ?? "",
+      token: credential,
     };
   } catch {
     return null;

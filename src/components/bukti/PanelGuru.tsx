@@ -5,85 +5,223 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { kategoriLaporan, panelGuru, statusLaporan } from "@/data/pelaporan";
 import {
+  panggilSheets,
+  sheetsAktif,
+  type AkunServer,
+  type LaporanServer,
+} from "@/lib/jaringan";
+import {
   bacaLaporan,
+  dariServer,
   ubahLaporan,
   type Laporan,
   type StatusLaporan,
 } from "@/lib/laporan";
 import { tanggalRingkas, type Profil } from "@/lib/progres";
 
-export function PanelGuru({ profil }: { profil: Profil }) {
+type Tahap = "memuat" | "boleh" | "tolak" | "galat";
+
+function pesanGalat(error: unknown) {
+  return error instanceof Error && error.message
+    ? error.message
+    : "Google Sheets tidak bisa dihubungi. Periksa koneksi lalu coba lagi.";
+}
+
+export function PanelGuru({ profil }: { profil: Profil | null }) {
+  const [tahap, setTahap] = useState<Tahap>(
+    sheetsAktif ? "memuat" : profil?.peran === "guru" ? "boleh" : "tolak",
+  );
   const [daftar, setDaftar] = useState<Laporan[]>([]);
   const [terbuka, setTerbuka] = useState("");
   const [statusPilihan, setStatusPilihan] = useState<StatusLaporan>("terkirim");
   const [balasan, setBalasan] = useState("");
   const [pesan, setPesan] = useState("");
+  const [galat, setGalat] = useState("");
+  const [sibuk, setSibuk] = useState(false);
+  const [ulang, setUlang] = useState(0);
 
   useEffect(() => {
-    setDaftar(bacaLaporan());
-  }, []);
+    if (!sheetsAktif) {
+      setDaftar(bacaLaporan());
+      return;
+    }
+
+    let aktif = true;
+
+    async function mulai() {
+      setTahap("memuat");
+      setGalat("");
+
+      try {
+        const akun = await panggilSheets<AkunServer>("aku");
+        if (!aktif) return;
+
+        const boleh =
+          akun.peran === "admin" || (akun.peran === "guru" && akun.status === "disetujui");
+
+        if (!boleh) {
+          setTahap("tolak");
+          return;
+        }
+
+        const hasil = await panggilSheets<LaporanServer[]>("laporanMasuk");
+        if (!aktif) return;
+
+        setDaftar(hasil.map((laporan) => dariServer(laporan, "")));
+        setTahap("boleh");
+      } catch (error) {
+        if (!aktif) return;
+        setGalat(pesanGalat(error));
+        setTahap("galat");
+      }
+    }
+
+    void mulai();
+    return () => {
+      aktif = false;
+    };
+  }, [ulang]);
 
   function buka(laporan: Laporan) {
     setTerbuka(laporan.tiket);
     setStatusPilihan(laporan.status);
     setBalasan("");
     setPesan("");
+    setGalat("");
 
-    if (!laporan.dibuka) {
-      const sekarang = new Date().toISOString();
-      ubahLaporan(laporan.tiket, (lama) => ({ ...lama, dibuka: sekarang }));
-      setDaftar(bacaLaporan());
+    if (laporan.dibuka) return;
+
+    const sekarang = new Date().toISOString();
+    setDaftar((lama) =>
+      lama.map((item) => (item.tiket === laporan.tiket ? { ...item, dibuka: sekarang } : item)),
+    );
+
+    if (sheetsAktif) {
+      void panggilSheets("ubahLaporan", { tiket: laporan.tiket, dibuka: true }).catch(() => {
+        setPesan("Tanda dibuka tidak tersimpan. Status tetap bisa diubah.");
+      });
+    } else {
+      ubahLaporan(laporan.tiket, (item) => ({ ...item, dibuka: sekarang }));
     }
   }
 
-  function simpanStatus(tiket: string) {
-    if (!ubahLaporan(tiket, (lama) => ({ ...lama, status: statusPilihan }))) {
-      setPesan("Penyimpanan peramban penuh. Status tidak tersimpan.");
-      return;
-    }
+  async function simpanStatus(tiket: string) {
+    setPesan("");
+    setGalat("");
+    setSibuk(true);
 
-    setDaftar(bacaLaporan());
-    setPesan("Status tersimpan.");
+    try {
+      if (sheetsAktif) {
+        await panggilSheets("ubahLaporan", { tiket, status: statusPilihan });
+      } else if (!ubahLaporan(tiket, (lama) => ({ ...lama, status: statusPilihan }))) {
+        setPesan("Penyimpanan peramban penuh. Status tidak tersimpan.");
+        return;
+      }
+
+      setDaftar((lama) =>
+        lama.map((item) => (item.tiket === tiket ? { ...item, status: statusPilihan } : item)),
+      );
+      setPesan("Status tersimpan.");
+    } catch (error) {
+      setGalat(pesanGalat(error));
+    } finally {
+      setSibuk(false);
+    }
   }
 
-  function kirimBalasan(tiket: string) {
+  async function kirimBalasan(tiket: string) {
     const isi = balasan.trim();
+
     if (isi.length < 2) {
       setPesan("Tulis balasan minimal 2 karakter.");
       return;
     }
 
-    const berhasil = ubahLaporan(tiket, (lama) => ({
-      ...lama,
-      status: lama.status === "terkirim" ? "ditinjau" : lama.status,
-      balasan: [
-        ...lama.balasan,
-        { dari: "guru", isi, tanggal: new Date().toISOString() },
-      ],
-    }));
+    setPesan("");
+    setGalat("");
+    setSibuk(true);
 
-    if (!berhasil) {
-      setPesan("Penyimpanan peramban penuh. Balasan tidak tersimpan.");
-      return;
+    const statusBaru: StatusLaporan | undefined =
+      statusPilihan === "terkirim" ? "ditinjau" : undefined;
+
+    try {
+      if (sheetsAktif) {
+        await panggilSheets("ubahLaporan", {
+          tiket,
+          balasan: isi,
+          status: statusBaru,
+        });
+      } else if (
+        !ubahLaporan(tiket, (lama) => ({
+          ...lama,
+          status: statusBaru ?? lama.status,
+          balasan: [...lama.balasan, { dari: "guru", isi, tanggal: new Date().toISOString() }],
+        }))
+      ) {
+        setPesan("Penyimpanan peramban penuh. Balasan tidak tersimpan.");
+        return;
+      }
+
+      setDaftar((lama) =>
+        lama.map((item) =>
+          item.tiket === tiket
+            ? {
+                ...item,
+                status: statusBaru ?? item.status,
+                balasan: [
+                  ...item.balasan,
+                  { dari: "guru", isi, tanggal: new Date().toISOString() },
+                ],
+              }
+            : item,
+        ),
+      );
+      setBalasan("");
+      setPesan("Balasan tersimpan untuk pelapor.");
+    } catch (error) {
+      setGalat(pesanGalat(error));
+    } finally {
+      setSibuk(false);
     }
-
-    setBalasan("");
-    setDaftar(bacaLaporan());
-    setPesan("Balasan tersimpan untuk pelapor.");
   }
 
-  if (profil.peran !== "guru") {
-    return <p className="text-small text-ink-muted">{panelGuru.akses}</p>;
+  if (tahap === "memuat") {
+    return (
+      <p role="status" className="text-small text-ink-muted">
+        {panelGuru.memuat}
+      </p>
+    );
+  }
+
+  if (tahap === "galat") {
+    return (
+      <div role="alert" className="rounded-xl border border-line-strong bg-accent-tint p-5">
+        <p className="text-small font-medium text-ink">{galat}</p>
+        <Button variant="secondary" className="mt-4" onClick={() => setUlang((nilai) => nilai + 1)}>
+          Coba lagi
+        </Button>
+      </div>
+    );
+  }
+
+  if (tahap === "tolak") {
+    return (
+      <p className="text-small text-ink-muted">
+        {sheetsAktif ? panelGuru.akses : panelGuru.aksesLokal}
+      </p>
+    );
   }
 
   return (
     <div>
       <h2 className="text-h2 font-medium">{panelGuru.judul}</h2>
-      <p className="mt-2 max-w-measure text-small text-ink-muted">{panelGuru.sub}</p>
+      <p className="mt-2 max-w-measure text-small text-ink-muted">
+        {sheetsAktif ? panelGuru.sub : panelGuru.subLokal}
+      </p>
 
       {daftar.length === 0 ? (
         <p className="mt-5 rounded-lg border border-line bg-paper-deep p-5 text-small text-ink-muted">
-          {panelGuru.kosong}
+          {sheetsAktif ? panelGuru.kosong : panelGuru.kosongLokal}
         </p>
       ) : (
         <ul className="mt-6 grid gap-4">
@@ -188,7 +326,7 @@ export function PanelGuru({ profil }: { profil: Profil }) {
                               </option>
                             ))}
                           </select>
-                          <Button onClick={() => simpanStatus(laporan.tiket)}>
+                          <Button disabled={sibuk} onClick={() => simpanStatus(laporan.tiket)}>
                             {panelGuru.simpanStatus}
                           </Button>
                         </div>
@@ -233,7 +371,11 @@ export function PanelGuru({ profil }: { profil: Profil }) {
                           maxLength={2000}
                           className="mt-2 w-full rounded-md border border-line-strong bg-paper px-3 py-2.5 text-small text-ink"
                         />
-                        <Button className="mt-3" onClick={() => kirimBalasan(laporan.tiket)}>
+                        <Button
+                          className="mt-3"
+                          disabled={sibuk}
+                          onClick={() => kirimBalasan(laporan.tiket)}
+                        >
                           {panelGuru.kirimBalasan}
                         </Button>
                       </div>
@@ -251,7 +393,15 @@ export function PanelGuru({ profil }: { profil: Profil }) {
         </p>
       ) : null}
 
-      <p className="mt-6 border-t border-line pt-4 text-small text-ink-soft">{panelGuru.catatan}</p>
+      {galat ? (
+        <p role="alert" className="mt-4 text-small font-medium text-danger">
+          {galat}
+        </p>
+      ) : null}
+
+      <p className="mt-6 border-t border-line pt-4 text-small text-ink-soft">
+        {sheetsAktif ? panelGuru.catatan : panelGuru.catatanLokal}
+      </p>
     </div>
   );
 }

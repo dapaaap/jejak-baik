@@ -1,6 +1,8 @@
 /**
  * Progres belajar disimpan di peramban pengguna (localStorage).
- * Situs ini statis tanpa server, jadi tidak ada data yang dikirim ke mana pun.
+ * Kuis, simulasi, dan refleksi tidak pernah dikirim ke mana pun.
+ * Laporan pengaduan adalah pengecualian: isinya dikirim ke Google Sheets
+ * sekolah, lihat src/lib/jaringan.ts.
  */
 export type Peran = "didik" | "guru";
 
@@ -32,6 +34,8 @@ export const kunciProgres = {
   kuis: "jejak-baik:kuis",
   simulasi: "jejak-baik:simulasi",
   laporan: "jejak-baik:laporan",
+  token: "jejak-baik:token",
+  tiket: "jejak-baik:tiket",
 } as const;
 
 export function bacaProgres<T>(kunci: string): T | null {

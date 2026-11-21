@@ -26,31 +26,33 @@ export const privasiHero = {
 
 export const privasiRingkas = [
   "Akun Google opsional, tanpa kata sandi Jejak Baik.",
-  "Hasil kuis, simulasi, refleksi, dan laporan tersimpan di peramban ini.",
+  "Hasil kuis, simulasi, dan refleksi tersimpan di peramban ini.",
+  "Laporan pengaduan dikirim ke Google Sheets sekolah bila fitur itu aktif.",
   "Tidak ada pelacak, iklan, atau cookie analitik.",
-  "Semua data bisa kamu hapus sendiri dari Dasbor.",
 ];
 
 export const privasiBagian: BagianPrivasi[] = [
   {
     judul: "Apa yang disimpan",
     paragraf: [
-      "Jejak Baik berjalan sebagai situs statis. Tidak ada basis data dan tidak ada server milik Jejak Baik yang menerima isi profil, refleksi, atau laporan. Semua yang kamu tulis disimpan di penyimpanan lokal peramban (localStorage) pada perangkat yang kamu pakai.",
-      "Login Google memakai Google Identity Services. Jejak Baik hanya membaca nama, email, dan foto profil dari token yang diberikan Google, lalu menyimpannya di perangkat ini. Tidak ada kata sandi Jejak Baik dan tidak ada data yang dikirim balik ke server kami.",
+      "Jejak Baik berjalan sebagai situs statis tanpa server sendiri. Profil, hasil kuis, hasil simulasi, dan refleksi disimpan di penyimpanan lokal peramban (localStorage) pada perangkat yang kamu pakai.",
+      "Laporan pengaduan adalah pengecualian. Kalau sekolah mengaktifkan fitur ini, isi laporan dikirim ke Google Sheets milik sekolah lewat Apps Script supaya Guru BK bisa membukanya dari perangkat lain. Lampiran bukti disimpan di Google Drive sekolah, dan yang dicatat di sheet hanya tautannya.",
+      "Login Google memakai Google Identity Services. Jejak Baik membaca nama, email, dan foto profil dari token Google. Token yang sama dikirim ke Apps Script hanya untuk memeriksa izin admin atau Guru BK, lalu disimpan di perangkat ini sampai kamu keluar.",
     ],
     poin: [
       "Nama panggilan, peran, email, dan avatar dari akun Google atau profil manual.",
       "Skor kuis, skor simulasi, dan tanggal pengerjaannya.",
       "Teks refleksi yang kamu simpan sendiri.",
-      "Laporan pengaduan: kategori, platform, tanggal kejadian, kronologi, lampiran bukti, status, dan balasan.",
+      "Laporan pengaduan: kategori, platform, tanggal kejadian, kronologi, tautan bukti, status, dan balasan.",
+      "Pendaftaran Guru BK: nama, email, sekolah, jabatan, dan status persetujuan.",
     ],
   },
   {
     judul: "Siapa yang bisa melihat",
     paragraf: [
-      "Karena data berada di perangkat ini, siapa pun yang memakai peramban yang sama bisa membukanya. Itu termasuk teman atau petugas lab komputer kalau kamu memakai perangkat bersama.",
-      "Guru BK tidak bisa membuka laporan dari perangkat mereka. Panel Pengaduan Masuk hanya membaca data di peramban yang sama. Kalau kamu ingin Guru BK mengetahuinya, tunjukkan nomor tiket dan laporanmu langsung, atau kirim lewat kanal sekolah.",
-      "Pilihan kirim anonim menyembunyikan nama dan emailmu di panel Guru BK, tetapi laporan tetap terhubung ke akunmu di perangkat ini supaya balasannya bisa kamu baca.",
+      "Data belajar di perangkat ini bisa dibuka siapa pun yang memakai peramban yang sama. Itu termasuk teman atau petugas lab komputer kalau kamu memakai perangkat bersama.",
+      "Laporan pengaduan bisa dibaca admin sekolah dan Guru BK yang sudah disetujui admin. Guru BK yang belum disetujui tidak bisa membuka panel pengaduan.",
+      "Kalau kamu memilih anonim, nama dan emailmu tidak ikut disimpan di baris laporan. Kamu tetap bisa membuka laporan itu lewat nomor tiket dan kunci yang tersimpan di perangkat ini.",
     ],
   },
   {
@@ -60,35 +62,36 @@ export const privasiBagian: BagianPrivasi[] = [
     ],
     poin: [
       "Tidak ada cookie untuk pelacakan atau iklan.",
-      "Tidak ada pengiriman isi refleksi atau kronologi laporan ke server mana pun.",
+      "Isi refleksi, jawaban kuis, dan hasil simulasi tidak pernah dikirim ke Google Sheets.",
       "Tidak ada pencatatan lokasi atau nomor telepon.",
     ],
   },
   {
     judul: "Cara menghapus data",
     paragraf: [
-      "Buka Dasbor, lalu pilih Hapus data di perangkat ini. Profil, daftar akun, hasil kuis, hasil simulasi, refleksi, dan seluruh laporan pengaduan akan terhapus dari peramban.",
-      "Kamu juga bisa menghapusnya lewat pengaturan peramban: buka daftar cookie dan data situs, lalu hapus data untuk alamat Jejak Baik.",
+      "Buka Dasbor, lalu pilih Hapus data di perangkat ini. Profil, daftar akun, hasil kuis, hasil simulasi, refleksi, dan salinan laporan di peramban akan terhapus.",
+      "Laporan yang sudah terkirim ke Google Sheets sekolah tetap tersimpan di sana. Minta admin sekolah menghapusnya kalau kamu ingin laporan itu hilang sepenuhnya.",
+      "Kamu juga bisa menghapus data peramban lewat pengaturan peramban: buka daftar cookie dan data situs, lalu hapus data untuk alamat Jejak Baik.",
     ],
   },
   {
     judul: "Batas layanan ini",
     paragraf: [
       "Jejak Baik adalah media edukasi, bukan layanan konseling, bukan alat diagnosis, dan tidak memantau isi refleksimu. Tidak ada seorang pun yang membaca jawabanmu secara otomatis.",
-      "Laporan yang dikirim lewat formulir di situs ini belum masuk ke sistem sekolah. Guru BK baru mengetahuinya kalau kamu menunjukkan nomor tiket atau mengirim laporan lewat kanal resmi sekolah.",
+      "Laporan yang terkirim masuk ke panel Guru BK, tetapi tidak mengirim notifikasi otomatis. Untuk hal yang mendesak, hubungi Guru BK atau kanal resmi sekolah secara langsung.",
       "Kalau kamu sedang dalam bahaya atau butuh pendampingan, hubungi orang dewasa tepercaya, Guru BK, SAPA 129, atau 112 untuk keadaan darurat.",
     ],
   },
   {
     judul: "Kalau cara kerja situs berubah",
     paragraf: [
-      "Halaman ini akan diperbarui ketika fitur baru mengubah cara data disimpan, misalnya saat laporan terkirim ke server sekolah dan verifikasi Guru BK aktif. Versi terbaru selalu ada di alamat ini.",
+      "Halaman ini diperbarui saat cara data disimpan berubah, termasuk ketika verifikasi Guru BK dan pengiriman laporan ke Google Sheets sekolah diaktifkan. Versi terbaru selalu ada di alamat ini.",
     ],
   },
 ];
 
 export const privasiStatus = {
   judul: "Status fitur akun",
-  isi: "Login Google sudah tersedia bila kunci klien diisi saat build. Yang belum aktif: verifikasi Guru BK oleh sekolah, enkripsi, riwayat akses lintas perangkat, dan pengiriman laporan ke server sekolah. Sampai itu dipasang, akun, laporan, dan balasan hanya hidup di peramban ini.",
+  isi: "Login Google aktif bila kunci klien diisi saat build. Pendaftaran Guru BK dan pengaduan lintas perangkat aktif bila NEXT_PUBLIC_SHEET_API_URL diisi dan Apps Script sudah di-deploy. Yang belum ada: enkripsi tambahan dan notifikasi otomatis ke Guru BK.",
   aksi: { label: "Buka pengaturan profil", href: "/auth" },
 };

@@ -1,11 +1,13 @@
 # Jejak Baik: website edukasi anti-cyberbullying
 
-Situs statis untuk remaja dan Guru BK. Semua sepuluh rute sudah berisi, tidak ada lagi
-halaman "segera hadir": materi, simulasi kasus, panduan tindakan, bukti & pelaporan, bantuan,
-kuis + refleksi, profil, dan dasbor progres. Login opsional lewat Google Identity Services,
-plus formulir pengaduan dengan nomor tiket dan panel tindak lanjut untuk Guru BK. Semua data
-tetap di peramban pengunjung. Konsep visual "jurnal lapangan digital": kertas
-hangat, tinta hijau hutan, aksen terakota. Arah desain lengkap ada di [`DESIGN.md`](./DESIGN.md).
+Situs statis untuk remaja dan Guru BK. Semua rute sudah berisi, tidak ada lagi halaman
+"segera hadir": materi, simulasi kasus, panduan tindakan, bukti & pelaporan, bantuan,
+kuis + refleksi, profil, dasbor progres, dan panel admin. Login opsional lewat Google
+Identity Services, plus formulir pengaduan dengan nomor tiket dan panel tindak lanjut
+untuk Guru BK. Progres belajar tetap di peramban pengunjung. Laporan pengaduan dan
+pendaftaran Guru BK bisa dikirim ke Google Sheets sekolah lewat Apps Script, lalu
+disetujui admin. Konsep visual "jurnal lapangan digital": kertas hangat, tinta hijau
+hutan, aksen terakota. Arah desain lengkap ada di [`DESIGN.md`](./DESIGN.md).
 
 ## Cara menjalankan
 
@@ -30,11 +32,14 @@ dengan static server apa pun. Contoh: `npx serve out`. Sebagian static server pe
 clean URL karena `trailingSlash` aktif. Vercel, Netlify, dan Cloudflare Pages menanganinya
 otomatis.
 
-Domain produksi diatur lewat `NEXT_PUBLIC_SITE_URL` dan kunci Google lewat
-`NEXT_PUBLIC_GOOGLE_CLIENT_ID` (lihat `.env.example`). Tanpa `NEXT_PUBLIC_SITE_URL`,
-canonical, Open Graph, dan `og:image` memakai `https://jejak-baik.example` sebagai
-placeholder. Tanpa client ID, tombol Google menampilkan catatan dan profil manual tetap
-jalan.
+Domain produksi diatur lewat `NEXT_PUBLIC_SITE_URL`, kunci Google lewat
+`NEXT_PUBLIC_GOOGLE_CLIENT_ID`, dan URL Apps Script lewat `NEXT_PUBLIC_SHEET_API_URL`
+(lihat `.env.example`). Tanpa `NEXT_PUBLIC_SITE_URL`, canonical, Open Graph, dan
+`og:image` memakai `https://jejakbaik.my.id`. Tanpa client ID, tombol Google
+menampilkan catatan dan profil manual tetap jalan. Tanpa URL Apps Script, laporan dan
+pendaftaran Guru BK kembali tersimpan di peramban, dan panel admin menampilkan catatan
+bahwa fitur itu belum aktif. Cara menyiapkan Google Sheets ada di
+[`docs/SETUP-GOOGLE-SHEET.md`](./docs/SETUP-GOOGLE-SHEET.md).
 
 ## Syarat hosting (penting untuk skor Lighthouse)
 
@@ -111,6 +116,7 @@ src/
     simulasi/page.tsx      latihan menilai situasi (5 kasus)
     kuis/page.tsx          kuis 8 soal + refleksi
     dashboard/page.tsx     dasbor progres + tab pengaduan (peran Guru BK)
+    admin/page.tsx         panel admin: pengaduan + persetujuan Guru BK
     auth/page.tsx          masuk/daftar: Google Identity Services + profil manual
     bukti-pelaporan/page.tsx  panduan bukti + formulir pengaduan + "Laporan saya"
     panduan/ bantuan/ privasi/  halaman konten statis
@@ -121,7 +127,8 @@ src/
                            CiriGrid, DampakGrid, NilaiQuote
     simulasi/              SimulasiKasus (alur kasus + penyimpanan hasil)
     kuis/                  KuisRefleksi (soal, skor, tiga kolom refleksi)
-    akun/                  FormProfil, TombolGoogle, PilihPeran, AvatarProfil
+    akun/                  FormProfil, TombolGoogle, PilihPeran, IsianGuru, AvatarProfil
+    admin/                 PanelAdmin (pengaduan + persetujuan Guru BK)
     dasbor/                DasborKlien (baca localStorage, hapus data)
     bukti/                 TombolSalin, FormLaporan, PanelGuru
     ui/                    Button, Card, Badge, SectionHeading, Icon,
@@ -134,7 +141,7 @@ src/
     navigasi.ts            menu dan tautan footer
     kontak.ts              kontak darurat, disclaimer, hak cipta
   lib/                     cn, metadata helper, progres/sesi/laporan (localStorage),
-                           google (pemuatan Google Identity Services)
+                           jaringan (panggilan Apps Script), google (Google Identity Services)
   styles/
     tokens.css             SEMUA design token (satu-satunya tempat nilai mentah)
     global.css             base layer, focus ring, skip link, reduced motion
@@ -163,11 +170,18 @@ persetujuan.
 
 Setelah mengubah data, jalankan `npm run typecheck` dan `npm run build`.
 
-## Penyimpanan data (tanpa backend)
+## Penyimpanan data
 
-Tidak ada server dan tidak ada basis data. Profil, hasil kuis, refleksi, hasil simulasi, dan
-laporan pengaduan disimpan di `localStorage` perangkat pengunjung lewat `src/lib/progres.ts`.
-Isinya:
+Tidak ada proses Node di server. Ada dua jalur penyimpanan:
+
+1. **Progres belajar** (profil, kuis, simulasi, refleksi) di `localStorage` perangkat
+   pengunjung lewat `src/lib/progres.ts`.
+2. **Laporan pengaduan dan pendaftaran Guru BK** di Google Sheets sekolah lewat Apps
+   Script, kalau `NEXT_PUBLIC_SHEET_API_URL` diisi saat build. Tanpa URL itu, keduanya
+   kembali tersimpan di peramban dan panel admin menampilkan catatan bahwa fitur belum
+   aktif.
+
+Kunci di peramban:
 
 | Kunci | Isi |
 |---|---|
@@ -175,13 +189,17 @@ Isinya:
 | `jejak-baik:akun` | daftar profil yang pernah masuk di perangkat ini, dicari lewat email |
 | `jejak-baik:kuis` | skor, jumlah benar, tanggal, tiga kolom refleksi |
 | `jejak-baik:simulasi` | skor, jumlah kasus, tanggal |
-| `jejak-baik:laporan` | laporan pengaduan: tiket, kategori, kronologi, bukti, status, balasan |
+| `jejak-baik:laporan` | salinan laporan pengaduan saat mode lokal |
+| `jejak-baik:token` | token Google untuk memeriksa izin ke Apps Script, dihapus saat keluar |
+| `jejak-baik:tiket` | pasangan nomor tiket dan rahasia untuk membuka laporan sendiri |
 
-Konsekuensinya: data hilang saat pengunjung membersihkan data peramban, dan tidak bisa
-dilihat dari perangkat lain. Panel "Pengaduan masuk" hanya membaca laporan yang ada di
-peramban yang sama. Halaman `/privasi` menyatakan hal ini apa adanya. Tombol hapus di
-`/dashboard` mengosongkan kelima kunci itu. Kalau nanti perlu data yang benar-benar
-tersimpan di server, itu pekerjaan backend baru, bukan perubahan pada halaman ini.
+Di Google Sheets, Apps Script membuat dua tab: `pengguna` (pendaftar Guru BK dan
+putusannya) dan `pengaduan` (laporan, status, balasan). Lampiran bukti masuk ke folder
+Google Drive yang ditentukan di `FOLDER_BUKTI`; sheet hanya menyimpan tautannya.
+
+Konsekuensinya: progres belajar hilang saat pengunjung membersihkan data peramban.
+Laporan yang sudah terkirim tetap ada di Google Sheets sekolah, dan tombol hapus di
+`/dashboard` tidak menghapusnya. Halaman `/privasi` menyatakan ini apa adanya.
 
 ## Login Google (opsional)
 
@@ -197,9 +215,11 @@ di console.cloud.google.com, lalu isi *Authorized JavaScript origins* dengan ala
 tanpa garis miring di akhir. Nilai ini publik (dikirim ke peramban), jadi jangan taruh
 client secret di proyek ini.
 
-Token Google dibaca di peramban saja: `src/lib/google.ts` mendekode JWT untuk mengambil
-nama, email, dan avatar. Tanda tangan token tidak diverifikasi karena tidak ada server.
-Tanpa client ID, tombol Google menampilkan catatan jujur dan profil manual tetap jalan.
+Token Google dibaca di peramban oleh `src/lib/google.ts` untuk mengambil nama, email,
+dan avatar. Untuk tindakan yang perlu izin (panel admin, pendaftaran Guru BK, mengubah
+laporan), token asli dikirim ke Apps Script dan diperiksa di sana lewat
+`oauth2.googleapis.com/tokeninfo`, termasuk `aud` dan `email_verified`. Tanpa client ID,
+tombol Google menampilkan catatan jujur dan profil manual tetap jalan.
 
 ## Design token
 
@@ -272,6 +292,7 @@ Semua rute berisi dan sudah diuji klik-per-klik di browser:
 | `/privasi` | pernyataan privasi, termasuk apa yang belum aktif |
 | `/auth` | masuk/daftar: Google Identity Services, pemilihan peran, profil manual |
 | `/dashboard` | skor kuis dan simulasi terakhir, tab "Pengaduan masuk" untuk Guru BK, hapus data |
+| `/admin` | panel admin: seluruh pengaduan + persetujuan pendaftaran Guru BK |
 | `/404` | halaman tidak ditemukan dengan gaya yang sama |
 
 ## Sumber konten
@@ -289,16 +310,13 @@ konten. Tanda pisah panjang sudah diganti koma atau titik sesuai panduan anti-sl
 
 ## Yang masih TODO
 
-- Domain produksi belum diisi. Set `NEXT_PUBLIC_SITE_URL` sebelum rilis, lalu build ulang
-  supaya canonical dan `og:image` memakai URL asli. Build saat ini memakai alamat IP VPS.
-- Port 80 Azure NSG belum dibuka, jadi URL publik sementara memakai Cloudflare Tunnel.
-- Belum ada HTTPS (butuh domain).
-- `NEXT_PUBLIC_GOOGLE_CLIENT_ID` belum diisi, jadi tombol Google menampilkan catatan bahwa
-  login Google belum aktif. Profil manual tetap bisa dipakai.
-- Belum ada backend. Profil, hasil kuis, refleksi, dan laporan pengaduan hanya tersimpan di
-  peramban pengunjung (lihat bagian "Penyimpanan data"). Verifikasi Guru BK oleh sekolah,
-  enkripsi, dan pengiriman laporan ke server sekolah belum ada. Halaman `/privasi`
-  menyebutkan ini sebagai "belum aktif".
+- `NEXT_PUBLIC_SHEET_API_URL` belum diisi di build produksi. Selama kosong, laporan dan
+  pendaftaran Guru BK hanya tersimpan di peramban. Ikuti
+  [`docs/SETUP-GOOGLE-SHEET.md`](./docs/SETUP-GOOGLE-SHEET.md), lalu build ulang.
+- Google Sheets belum punya enkripsi tambahan atau aturan retensi. Untuk serah terima,
+  pindahkan kepemilikan spreadsheet dan folder bukti ke akun sekolah.
+- Belum ada notifikasi otomatis ke Guru BK saat laporan masuk; mereka membuka panel untuk
+  memeriksanya.
 - Mode gelap belum dibuat (opsional).
 
 ## Aksesibilitas dan SEO

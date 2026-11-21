@@ -1,6 +1,8 @@
 /**
  * Sesi belajar disimpan di peramban ini. "Akun" di sini adalah profil lokal:
  * tidak ada kata sandi dan tidak ada data yang dikirim ke server Jejak Baik.
+ * Token Google hanya dipakai untuk meminta izin ke Apps Script, dan ikut
+ * terhapus saat keluar.
  */
 import {
   bacaProgres,
@@ -30,9 +32,10 @@ function simpanDaftarAkun(profil: Profil) {
 }
 
 /** Menyimpan sesi berjalan dan, kalau ada email, mendaftarkannya sebagai akun perangkat ini. */
-export function mulaiSesi(profil: Profil): boolean {
+export function mulaiSesi(profil: Profil, token?: string): boolean {
   const tersimpan = simpanProgres(kunciProgres.profil, profil);
   if (tersimpan && profil.email) simpanDaftarAkun(profil);
+  if (tersimpan && token) simpanProgres(kunciProgres.token, token);
   kabariSesi();
   return tersimpan;
 }
@@ -40,7 +43,13 @@ export function mulaiSesi(profil: Profil): boolean {
 /** Keluar hanya menutup sesi. Hasil kuis, simulasi, dan laporan tetap ada. */
 export function akhiriSesi() {
   hapusProgres(kunciProgres.profil);
+  hapusProgres(kunciProgres.token);
   kabariSesi();
+}
+
+/** Token Google untuk meminta izin ke Apps Script. Kosong berarti belum masuk. */
+export function tokenAktif(): string {
+  return bacaProgres<string>(kunciProgres.token) ?? "";
 }
 
 export function kabariSesi() {

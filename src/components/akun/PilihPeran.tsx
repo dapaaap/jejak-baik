@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import { AvatarProfil } from "@/components/akun/AvatarProfil";
+import {
+  guruKosong,
+  IsianGuru,
+  validasiGuru,
+  type NilaiGuru,
+} from "@/components/akun/IsianGuru";
 import { Button } from "@/components/ui/Button";
-import { akunGoogle, pilihanPeran } from "@/data/akun";
+import { akunGuru, akunGoogle, pilihanPeran } from "@/data/akun";
 import type { AkunGoogle } from "@/lib/google";
+import { panggilSheets, sheetsAktif } from "@/lib/jaringan";
 import type { Peran, Profil } from "@/lib/progres";
 import { mulaiSesi } from "@/lib/sesi";
 
@@ -19,9 +26,38 @@ export function PilihPeran({
   onBatal?: () => void;
 }) {
   const [peran, setPeran] = useState<Peran>("didik");
+  const [guru, setGuru] = useState<NilaiGuru>(guruKosong);
   const [galat, setGalat] = useState("");
+  const [mengirim, setMengirim] = useState(false);
 
-  function simpan() {
+  async function simpan() {
+    setGalat("");
+
+    if (peran === "guru" && sheetsAktif) {
+      const salah = validasiGuru(guru);
+      if (salah) {
+        setGalat(salah);
+        return;
+      }
+
+      setMengirim(true);
+
+      try {
+        await panggilSheets("daftarGuru", {
+          sekolah: guru.sekolah.trim(),
+          jabatan: guru.jabatan.trim(),
+        });
+      } catch (error) {
+        setMengirim(false);
+        setGalat(
+          error instanceof Error && error.message ? error.message : akunGuru.gagal,
+        );
+        return;
+      }
+
+      setMengirim(false);
+    }
+
     const profil: Profil = {
       nama: akun.nama,
       peran,
@@ -31,7 +67,7 @@ export function PilihPeran({
       statusVerifikasi: peran === "guru" ? "menunggu" : undefined,
     };
 
-    if (!mulaiSesi(profil)) {
+    if (!mulaiSesi(profil, akun.token)) {
       setGalat(
         "Peramban menolak menyimpan. Coba matikan mode penyamaran atau izinkan penyimpanan situs ini.",
       );
@@ -83,9 +119,19 @@ export function PilihPeran({
         </div>
       </fieldset>
 
-      {peran === "guru" ? (
-        <p className="mt-4 text-small text-ink-muted">
-          {`${akunGoogle.menunggu}: panel pengaduan tetap bisa dibuka, tetapi akun ini ditandai belum diverifikasi sekolah.`}
+      {peran === "guru" && sheetsAktif ? (
+        <fieldset className="mt-5 rounded-lg border border-line bg-paper p-4">
+          <legend className="px-1 text-small font-semibold">{akunGuru.judul}</legend>
+          <p className="text-small text-ink-muted">{akunGuru.sub}</p>
+          <div className="mt-4">
+            <IsianGuru nilai={guru} onUbah={setGuru} idAwalan="peran-guru" />
+          </div>
+        </fieldset>
+      ) : null}
+
+      {peran === "guru" && !sheetsAktif ? (
+        <p className="mt-4 rounded-md border border-line bg-paper-deep p-4 text-small text-ink-muted">
+          {akunGuru.tanpaJaringan}
         </p>
       ) : null}
 
@@ -96,7 +142,9 @@ export function PilihPeran({
       ) : null}
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button onClick={simpan}>{akunGoogle.lanjut}</Button>
+        <Button onClick={simpan} disabled={mengirim}>
+          {mengirim ? akunGuru.mengirim : akunGoogle.lanjut}
+        </Button>
         {onBatal ? (
           <Button variant="secondary" onClick={onBatal}>
             Batal

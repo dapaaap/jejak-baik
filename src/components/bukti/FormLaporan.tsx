@@ -16,10 +16,14 @@ import {
   statusLaporan,
 } from "@/data/pelaporan";
 import type { AkunGoogle } from "@/lib/google";
+import { panggilSheets, sheetsAktif, type LaporanServer } from "@/lib/jaringan";
 import {
   bacaLaporan,
+  bacaTiket,
   buatTiket,
+  dariServer,
   kunciPemilik,
+  simpanTiket,
   tambahLaporan,
   type Laporan,
 } from "@/lib/laporan";
@@ -56,6 +60,10 @@ export function FormLaporan() {
   const [sesi, setSesi] = useState<Profil | null>(null);
   const [calon, setCalon] = useState<AkunGoogle | null>(null);
   const [daftar, setDaftar] = useState<Laporan[]>([]);
+  const [daftarServer, setDaftarServer] = useState<Laporan[]>([]);
+  const [memuatDaftar, setMemuatDaftar] = useState(false);
+  const [galatDaftar, setGalatDaftar] = useState("");
+  const [peringatan, setPeringatan] = useState("");
 
   const [anonim, setAnonim] = useState(false);
   const [kategori, setKategori] = useState("");
@@ -69,17 +77,46 @@ export function FormLaporan() {
   const [tiketBaru, setTiketBaru] = useState("");
   const berkas = useRef<HTMLInputElement>(null);
 
+  async function muatDaftar(profil: Profil) {
+    if (!sheetsAktif) return;
+
+    const pasangan = bacaTiket();
+    if (!pasangan.length) {
+      setDaftarServer([]);
+      setGalatDaftar("");
+      return;
+    }
+
+    setMemuatDaftar(true);
+    setGalatDaftar("");
+
+    try {
+      const hasil = await panggilSheets<LaporanServer[]>("laporanSaya", { tikets: pasangan });
+      setDaftarServer(hasil.map((item) => dariServer(item, kunciPemilik(profil))));
+    } catch (error) {
+      setGalatDaftar(
+        error instanceof Error && error.message
+          ? error.message
+          : "Daftar laporan tidak bisa dimuat.",
+      );
+    } finally {
+      setMemuatDaftar(false);
+    }
+  }
+
   useEffect(() => {
-    setSesi(sesiAktif());
+    const aktif = sesiAktif();
+    setSesi(aktif);
     setDaftar(bacaLaporan());
     setMemuat(false);
+    if (aktif) void muatDaftar(aktif);
   }, []);
 
   function pakaiGoogle(akun: AkunGoogle) {
     const terdaftar = akunTerdaftar(akun.email);
 
     if (terdaftar) {
-      mulaiSesi(terdaftar);
+      mulaiSesi(terdaftar, akun.token);
       setSesi(terdaftar);
       return;
     }
@@ -122,7 +159,16 @@ export function FormLaporan() {
     if (berkas.current) berkas.current.value = "";
   }
 
-  function kirim(event: React.FormEvent<HTMLFormElement>) {
+  function bersihkan() {
+    setKategori("");
+    setPlatform("");
+    setKejadian("");
+    setKronologi("");
+    setAnonim(false);
+    hapusBukti();
+  }
+
+  async function kirim(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!sesi) return;
 
@@ -138,6 +184,46 @@ export function FormLaporan() {
 
     setMengirim(true);
     setGalat("");
+
+    if (sheetsAktif) {
+      try {
+        const rahasia = crypto.randomUUID();
+        const hasil = await panggilSheets<{ tiket: string }>("kirimLaporan", {
+          rahasia,
+          laporan: {
+            nama: sesi.nama,
+            anonim,
+            kategori,
+            platform,
+            kejadian,
+            kronologi: kronologi.trim(),
+            bukti: gambar?.url ?? "",
+          },
+        });
+
+        if (!simpanTiket(hasil.tiket, rahasia)) {
+          setPeringatan(
+            "Laporan terkirim, tetapi nomor tiket tidak bisa disimpan di peramban ini. Salin nomornya sekarang.",
+          );
+        } else {
+          setPeringatan("");
+        }
+
+        setTiketBaru(hasil.tiket);
+        bersihkan();
+        void muatDaftar(sesi);
+      } catch (error) {
+        setGalat(
+          error instanceof Error && error.message
+            ? error.message
+            : "Laporan gagal dikirim. Periksa koneksi lalu coba lagi.",
+        );
+      } finally {
+        setMengirim(false);
+      }
+
+      return;
+    }
 
     const semua = bacaLaporan();
     const laporan: Laporan = {
@@ -167,12 +253,7 @@ export function FormLaporan() {
 
     setDaftar(bacaLaporan());
     setTiketBaru(laporan.tiket);
-    setKategori("");
-    setPlatform("");
-    setKejadian("");
-    setKronologi("");
-    setAnonim(false);
-    hapusBukti();
+    bersihkan();
     setMengirim(false);
   }
 
@@ -238,19 +319,28 @@ export function FormLaporan() {
     );
   }
 
-  const laporanSayaIni = daftar.filter((laporan) => laporan.pemilik === kunciPemilik(sesi));
+  const laporanSayaIni = sheetsAktif
+    ? daftarServer
+    : daftar.filter((laporan) => laporan.pemilik === kunciPemilik(sesi));
   const hariIni = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="grid gap-10">
       {tiketBaru ? (
         <div className="rounded-xl border border-forest bg-paper-deep p-6 sm:p-8">
-          <p className="text-caption font-semibold uppercase text-accent">{formLaporan.sukses}</p>
+          <p className="text-caption font-semibold uppercase text-accent">
+            {sheetsAktif ? formLaporan.sukses : formLaporan.suksesLokal}
+          </p>
           <p className="mt-2 text-small text-ink-muted">{formLaporan.tiketLabel}</p>
           <p className="mt-1 font-display text-h1 font-medium">{tiketBaru}</p>
           <p className="mt-2 max-w-measure text-small text-ink-muted">
             {formLaporan.tiketCatatan}
           </p>
+          {peringatan ? (
+            <p role="alert" className="mt-2 text-small font-medium text-danger">
+              {peringatan}
+            </p>
+          ) : null}
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <TombolSalin
               teks={tiketBaru}
@@ -415,12 +505,12 @@ export function FormLaporan() {
           ) : null}
 
           <p className="mt-5 max-w-measure border-t border-line pt-4 text-small text-ink-soft">
-            {formLaporan.privasi}
+            {sheetsAktif ? formLaporan.privasi : formLaporan.privasiLokal}
           </p>
 
           <div className="mt-5">
             <Button type="submit" disabled={mengirim}>
-              {mengirim ? "Menyimpan..." : formLaporan.kirim}
+              {mengirim ? "Mengirim laporan..." : formLaporan.kirim}
             </Button>
           </div>
         </form>
@@ -428,8 +518,25 @@ export function FormLaporan() {
 
       <div>
         <h2 className="text-h2 font-medium">{laporanSaya.judul}</h2>
+
+        {galatDaftar ? (
+          <p role="alert" className="mt-3 text-small font-medium text-danger">
+            {galatDaftar}
+          </p>
+        ) : null}
+
+        {memuatDaftar ? (
+          <p role="status" className="mt-3 text-small text-ink-muted">
+            Memuat laporan dari Google Sheets sekolah...
+          </p>
+        ) : null}
+
         {laporanSayaIni.length === 0 ? (
-          <p className="mt-3 text-small text-ink-muted">{laporanSaya.kosong}</p>
+          memuatDaftar ? null : (
+            <p className="mt-3 text-small text-ink-muted">
+              {sheetsAktif ? laporanSaya.kosong : laporanSaya.kosongLokal}
+            </p>
+          )
         ) : (
           <ul className="mt-5 grid gap-4">
             {laporanSayaIni

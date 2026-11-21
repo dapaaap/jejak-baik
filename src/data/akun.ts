@@ -19,6 +19,7 @@ export const akunHero = {
   sub: "Profil ini tersimpan di peramban ini, bukan di server Jejak Baik. Isi manual, atau pakai akun Google supaya nama dan avatarmu langsung terisi.",
   catatan: [
     "Tidak ada kata sandi Jejak Baik. Google hanya dipakai untuk nama, email, dan avatar.",
+    "Pendaftaran Guru BK dikirim ke Google Sheets sekolah supaya bisa disetujui admin.",
     "Jangan tulis nama lengkap, nomor telepon, atau alamat di profil manual.",
     "Kalau memakai komputer bersama, keluar dan hapus profil setelah selesai.",
   ],
@@ -43,6 +44,27 @@ export const akunTersimpan = {
   hapus: "Hapus profil",
   lanjut: "Buka dasbor",
   sukses: "Profil tersimpan di perangkat ini.",
+  admin: "Buka panel admin",
+};
+
+export const akunGuru = {
+  judul: "Pendaftaran Guru BK",
+  sub: "Admin sekolah memeriksa setiap pendaftaran. Selama masih menunggu, panel pengaduan belum bisa dibuka.",
+  sekolah: "Nama sekolah",
+  sekolahBantuan: "Nama sekolah atau instansi tempat kamu mendampingi siswa.",
+  jabatan: "Jabatan",
+  jabatanBantuan: "Misalnya Guru BK, Konselor, atau Wali Kelas pendamping.",
+  kirim: "Kirim pendaftaran",
+  mengirim: "Mengirim pendaftaran...",
+  menunggu: "Pendaftaran terkirim. Tunggu persetujuan admin sekolah.",
+  disetujui: "Sudah disetujui admin sekolah.",
+  ditolak: "Pendaftaran ditolak admin sekolah. Hubungi admin untuk meninjau ulang.",
+  gagal: "Pendaftaran gagal terkirim. Periksa koneksi lalu coba lagi.",
+  perluGoogle: "Peran Guru BK perlu masuk dengan Google supaya bisa diperiksa admin sekolah.",
+  memeriksa: "Memeriksa status pendaftaran...",
+  lengkapi: "Lengkapi pendaftaran Guru BK",
+  tanpaJaringan:
+    "Pendaftaran Guru BK belum aktif di build ini karena Google Sheets belum disambungkan. Peran Guru BK hanya tersimpan di perangkat ini.",
 };
 
 export const akunGoogle = {

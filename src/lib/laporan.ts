@@ -1,8 +1,11 @@
 /**
- * Laporan pengaduan disimpan di peramban ini (localStorage), sama seperti progres
- * belajar. Tidak ada server yang menerima laporan, jadi Guru BK hanya bisa membuka
- * laporan dari perangkat yang sama.
+ * Laporan pengaduan. Kalau NEXT_PUBLIC_SHEET_API_URL diisi, isinya dikirim ke
+ * Google Sheets sekolah (lihat src/lib/jaringan.ts). Tanpa URL itu, laporan
+ * jatuh kembali ke localStorage seperti sebelumnya.
+ *
+ * Tipe dan helper di bawah dipakai kedua mode, supaya tampilan tidak bercabang.
  */
+import type { LaporanServer } from "./jaringan";
 import { bacaProgres, kunciProgres, simpanProgres, type Profil } from "./progres";
 
 export type StatusLaporan = "terkirim" | "ditinjau" | "ditindaklanjuti" | "selesai";
@@ -67,4 +70,38 @@ export function ubahLaporan(tiket: string, ubah: (laporan: Laporan) => Laporan):
   return simpanLaporan(
     daftar.map((laporan) => (laporan.tiket === tiket ? ubah(laporan) : laporan)),
   );
+}
+
+/** Pasangan tiket dan rahasia untuk membuka laporan sendiri dari Google Sheets. */
+export interface TiketRahasia {
+  tiket: string;
+  rahasia: string;
+}
+
+export function bacaTiket(): TiketRahasia[] {
+  return bacaProgres<TiketRahasia[]>(kunciProgres.tiket) ?? [];
+}
+
+export function simpanTiket(tiket: string, rahasia: string): boolean {
+  const daftar = bacaTiket().filter((item) => item.tiket !== tiket);
+  return simpanProgres(kunciProgres.tiket, [...daftar, { tiket, rahasia }]);
+}
+
+/** Laporan dari Google Sheets memakai bentuk yang sama dengan laporan lokal. */
+export function dariServer(laporan: LaporanServer, pemilik: string): Laporan {
+  return {
+    tiket: laporan.tiket,
+    dibuat: laporan.dibuat,
+    pemilik,
+    nama: laporan.nama,
+    anonim: laporan.anonim,
+    kategori: laporan.kategori,
+    platform: laporan.platform,
+    kejadian: laporan.kejadian,
+    kronologi: laporan.kronologi,
+    bukti: laporan.buktiUrl,
+    status: laporan.status,
+    dibuka: laporan.dibuka,
+    balasan: laporan.balasan,
+  };
 }
