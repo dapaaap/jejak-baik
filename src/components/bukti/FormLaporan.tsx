@@ -188,7 +188,7 @@ export function FormLaporan() {
     if (sheetsAktif) {
       try {
         const rahasia = crypto.randomUUID();
-        const hasil = await panggilSheets<{ tiket: string }>("kirimLaporan", {
+        const hasil = await panggilSheets<{ tiket: string; buktiUrl: string }>("kirimLaporan", {
           rahasia,
           laporan: {
             nama: sesi.nama,
@@ -201,14 +201,17 @@ export function FormLaporan() {
           },
         });
 
+        const catatan: string[] = [];
+
         if (!simpanTiket(hasil.tiket, rahasia)) {
-          setPeringatan(
+          catatan.push(
             "Laporan terkirim, tetapi nomor tiket tidak bisa disimpan di peramban ini. Salin nomornya sekarang.",
           );
-        } else {
-          setPeringatan("");
         }
 
+        if (gambar && !hasil.buktiUrl) catatan.push(formLaporan.buktiGagal);
+
+        setPeringatan(catatan.join(" "));
         setTiketBaru(hasil.tiket);
         bersihkan();
         void muatDaftar(sesi);

@@ -24,6 +24,8 @@ export const formLaporan = {
   privasiLokal:
     "Laporan disimpan di peramban perangkat ini, bukan di server sekolah. Guru BK hanya bisa membukanya dari perangkat yang sama. Karena itu, simpan nomor tiket dan tunjukkan laporan ini langsung ke Guru BK.",
   sukses: "Laporan terkirim ke Guru BK.",
+  buktiGagal:
+    "Laporan terkirim, tetapi lampiran bukti tidak tersimpan. Serahkan buktinya langsung ke Guru BK.",
   suksesLokal: "Laporan tercatat di perangkat ini.",
   tiketLabel: "Nomor tiket",
   tiketCatatan:
