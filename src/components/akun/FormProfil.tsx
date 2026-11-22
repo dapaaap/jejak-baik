@@ -284,13 +284,14 @@ export function FormProfil() {
           </div>
         ) : null}
 
-        {sheetsAktif && profil.email && (memuatServer || akunServer || galatServer) ? (
+        {sheetsAktif &&
+        profil.email &&
+        akunServer &&
+        (akunServer.pemilik || akunServer.ajuanAdmin !== undefined) ? (
           <div className="mt-4 grid justify-items-start gap-2">
-            {memuatServer && !akunServer ? (
-              <Badge>{akunAdmin.memeriksa}</Badge>
-            ) : akunServer?.pemilik ? (
+            {akunServer.pemilik ? (
               <Badge>{akunAdmin.pemilik}</Badge>
-            ) : akunServer?.peran === "admin" ? (
+            ) : akunServer.peran === "admin" ? (
               <Badge>{akunAdmin.disetujui}</Badge>
             ) : akunServer?.ajuanAdmin === "menunggu" ? (
               <Badge>{akunAdmin.menunggu}</Badge>

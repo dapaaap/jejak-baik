@@ -69,11 +69,8 @@ export const akunGuru = {
 };
 
 export const akunAdmin = {
-  judul: "Akses admin sekolah",
-  sub: "Admin sekolah membaca pengaduan dan menyetujui pendaftaran Guru BK. Ajukan akses kalau kamu memang mengelola situs ini di sekolah.",
   ajukan: "Ajukan akses admin",
   mengirim: "Mengirim pengajuan...",
-  memeriksa: "Memeriksa akses admin...",
   pemilik: "Pemilik situs",
   menunggu: "Pengajuan admin menunggu persetujuan pemilik situs.",
   ditolak: "Pengajuan admin ditolak. Kamu tetap bisa memakai akun ini seperti biasa.",
