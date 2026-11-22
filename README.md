@@ -193,9 +193,10 @@ Kunci di peramban:
 | `jejak-baik:token` | token Google untuk memeriksa izin ke Apps Script, dihapus saat keluar |
 | `jejak-baik:tiket` | pasangan nomor tiket dan rahasia untuk membuka laporan sendiri |
 
-Di Google Sheets, Apps Script membuat dua tab: `pengguna` (pendaftar Guru BK dan
-putusannya) dan `pengaduan` (laporan, status, balasan). Lampiran bukti masuk ke folder
-Google Drive yang ditentukan di `FOLDER_BUKTI`; sheet hanya menyimpan tautannya.
+Di Google Sheets, Apps Script membuat tiga tab: `pengguna` (pendaftar Guru BK dan
+putusannya), `pengaduan` (laporan, status, balasan), dan `permintaanAdmin` (pengajuan
+akses admin dan putusan pemilik situs). Lampiran bukti masuk ke folder Google Drive
+yang ditentukan di `FOLDER_BUKTI`; sheet hanya menyimpan tautannya.
 
 Konsekuensinya: progres belajar hilang saat pengunjung membersihkan data peramban.
 Laporan yang sudah terkirim tetap ada di Google Sheets sekolah, dan tombol hapus di
@@ -292,7 +293,7 @@ Semua rute berisi dan sudah diuji klik-per-klik di browser:
 | `/privasi` | pernyataan privasi, termasuk apa yang belum aktif |
 | `/auth` | masuk/daftar: Google Identity Services, pemilihan peran, profil manual |
 | `/dashboard` | skor kuis dan simulasi terakhir, tab "Pengaduan masuk" untuk Guru BK, hapus data |
-| `/admin` | panel admin: seluruh pengaduan + persetujuan pendaftaran Guru BK |
+| `/admin` | panel admin: seluruh pengaduan, persetujuan Guru BK, dan permintaan admin (khusus pemilik situs) |
 | `/404` | halaman tidak ditemukan dengan gaya yang sama |
 
 ## Sumber konten

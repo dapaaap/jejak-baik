@@ -20,6 +20,7 @@ export const akunHero = {
   catatan: [
     "Tidak ada kata sandi Jejak Baik. Google hanya dipakai untuk nama, email, dan avatar.",
     "Pendaftaran Guru BK dikirim ke Google Sheets sekolah supaya bisa disetujui admin.",
+    "Permintaan akses admin juga dikirim ke Google Sheets dan hanya disetujui pemilik situs.",
     "Jangan tulis nama lengkap, nomor telepon, atau alamat di profil manual.",
     "Kalau memakai komputer bersama, keluar dan hapus profil setelah selesai.",
   ],
@@ -65,6 +66,19 @@ export const akunGuru = {
   lengkapi: "Lengkapi pendaftaran Guru BK",
   tanpaJaringan:
     "Pendaftaran Guru BK belum aktif di build ini karena Google Sheets belum disambungkan. Peran Guru BK hanya tersimpan di perangkat ini.",
+};
+
+export const akunAdmin = {
+  judul: "Akses admin sekolah",
+  sub: "Admin sekolah membaca pengaduan dan menyetujui pendaftaran Guru BK. Ajukan akses kalau kamu memang mengelola situs ini di sekolah.",
+  ajukan: "Ajukan akses admin",
+  mengirim: "Mengirim pengajuan...",
+  memeriksa: "Memeriksa akses admin...",
+  pemilik: "Pemilik situs",
+  menunggu: "Pengajuan admin menunggu persetujuan pemilik situs.",
+  ditolak: "Pengajuan admin ditolak. Kamu tetap bisa memakai akun ini seperti biasa.",
+  disetujui: "Admin sekolah",
+  gagal: "Pengajuan admin gagal terkirim. Periksa koneksi lalu coba lagi.",
 };
 
 export const akunGoogle = {

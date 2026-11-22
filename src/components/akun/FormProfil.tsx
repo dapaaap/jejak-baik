@@ -15,7 +15,14 @@ import {
 } from "@/components/akun/IsianGuru";
 import { PilihPeran } from "@/components/akun/PilihPeran";
 import { TombolGoogle } from "@/components/akun/TombolGoogle";
-import { akunGuru, akunGoogle, akunHero, akunTersimpan, pilihanPeran } from "@/data/akun";
+import {
+  akunAdmin,
+  akunGuru,
+  akunGoogle,
+  akunHero,
+  akunTersimpan,
+  pilihanPeran,
+} from "@/data/akun";
 import type { AkunGoogle } from "@/lib/google";
 import {
   panggilSheets,
@@ -152,6 +159,29 @@ export function FormProfil() {
     void muatServer(baru);
   }
 
+  async function ajukanAdmin() {
+    if (!profil?.email) return;
+
+    setMengirim(true);
+    setGalatServer("");
+
+    try {
+      const hasil = await panggilSheets<{ status: StatusAkun }>("ajukanAdmin");
+      setAkunServer((lama) => ({
+        peran: lama?.peran ?? "didik",
+        status: lama?.status ?? "belum-terdaftar",
+        pemilik: lama?.pemilik ?? false,
+        ajuanAdmin: hasil.status,
+      }));
+    } catch (error) {
+      setGalatServer(
+        error instanceof Error && error.message ? error.message : akunAdmin.gagal,
+      );
+    } finally {
+      setMengirim(false);
+    }
+  }
+
   function keluar() {
     window.google?.accounts.id.disableAutoSelect();
     akhiriSesi();
@@ -251,13 +281,36 @@ export function FormProfil() {
                 {akunGuru.lengkapi}
               </Button>
             ) : null}
-
-            {galatServer ? (
-              <p role="alert" className="text-small font-medium text-danger">
-                {galatServer}
-              </p>
-            ) : null}
           </div>
+        ) : null}
+
+        {sheetsAktif && profil.email && (memuatServer || akunServer || galatServer) ? (
+          <div className="mt-4 grid justify-items-start gap-2">
+            {memuatServer && !akunServer ? (
+              <Badge>{akunAdmin.memeriksa}</Badge>
+            ) : akunServer?.pemilik ? (
+              <Badge>{akunAdmin.pemilik}</Badge>
+            ) : akunServer?.peran === "admin" ? (
+              <Badge>{akunAdmin.disetujui}</Badge>
+            ) : akunServer?.ajuanAdmin === "menunggu" ? (
+              <Badge>{akunAdmin.menunggu}</Badge>
+            ) : (
+              <>
+                {akunServer?.ajuanAdmin === "ditolak" ? (
+                  <p className="text-small text-ink-muted">{akunAdmin.ditolak}</p>
+                ) : null}
+                <Button variant="secondary" onClick={ajukanAdmin} disabled={mengirim}>
+                  {mengirim ? akunAdmin.mengirim : akunAdmin.ajukan}
+                </Button>
+              </>
+            )}
+          </div>
+        ) : null}
+
+        {galatServer ? (
+          <p role="alert" className="mt-4 text-small font-medium text-danger">
+            {galatServer}
+          </p>
         ) : null}
 
         {status === "ok" ? (

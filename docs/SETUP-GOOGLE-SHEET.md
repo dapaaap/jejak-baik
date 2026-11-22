@@ -7,8 +7,8 @@ Apps Script. Tidak ada proses Node yang perlu dirawat di VPS.
 
 1. Buka <https://sheets.new> dengan akun Google yang akan menjadi admin.
 2. Beri nama, misalnya `Jejak Baik - Data`.
-3. Jangan buat tab apa pun. Tab `pengguna` dan `pengaduan` dibuat otomatis
-   saat permintaan pertama masuk.
+3. Jangan buat tab apa pun. Tab `pengguna`, `pengaduan`, dan `permintaanAdmin`
+   dibuat otomatis saat permintaan pertama masuk.
 
 ## 2. Tempel Apps Script
 
@@ -23,7 +23,8 @@ Apps Script. Tidak ada proses Node yang perlu dirawat di VPS.
    ```
 
    - `ADMIN`: email Google kamu. Bisa lebih dari satu, pisahkan dengan koma.
-     Hanya email ini yang bisa menyetujui Guru BK dan melihat semua pengaduan.
+     Hanya email ini yang bisa menyetujui Guru BK dan permintaan akses admin,
+     serta melihat semua pengaduan.
    - `FOLDER_BUKTI`: ID folder Google Drive untuk lampiran bukti. Buka folder
      di Drive, salin ID dari URL: `drive.google.com/drive/folders/ID_FOLDER_DI_SINI`.
      Kosongkan kalau lampiran tidak ingin disimpan.
@@ -95,6 +96,17 @@ mendaftar sebagai Guru BK.
 Untuk menguji alur lengkap: daftar sekali sebagai Guru BK dengan akun Google
 lain, setujui dari panel admin, lalu buka Dasbor akun Guru BK itu dan pilih tab
 **Pengaduan masuk**.
+
+### Menambah admin lain
+
+1. Dari halaman **Profil**, akun Google yang akan dijadikan admin menekan
+   **Ajukan akses admin**.
+2. Buka panel admin pada tab **Permintaan Admin**. Tab ini hanya muncul untuk
+   email di `ADMIN`.
+3. Tekan **Setujui**. Akun itu sekarang bisa membuka panel admin, tetapi tidak
+   melihat tab Permintaan Admin.
+4. Untuk mencabut akses, tekan **Tolak** pada baris yang sudah disetujui, atau
+   ubah `status` di tab `permintaanAdmin` menjadi `ditolak`.
 
 ## Kalau muncul "Failed to fetch"
 

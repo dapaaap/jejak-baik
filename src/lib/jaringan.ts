@@ -16,6 +16,19 @@ export type StatusAkun = "menunggu" | "disetujui" | "ditolak" | "belum-terdaftar
 export interface AkunServer {
   peran: PeranServer;
   status: StatusAkun;
+  /** true hanya untuk email di daftar ADMIN Apps Script. */
+  pemilik?: boolean;
+  /** Status permintaan akses admin, terpisah dari status Guru BK. */
+  ajuanAdmin?: StatusAkun;
+}
+
+export interface CalonAdmin {
+  email: string;
+  nama: string;
+  status: "menunggu" | "disetujui" | "ditolak";
+  tanggal: string;
+  putusanOleh?: string;
+  tanggalPutusan?: string;
 }
 
 export interface PendaftarGuru {

@@ -24,6 +24,7 @@ var FOLDER_BUKTI = "";
 
 var TAB_PENGGUNA = "pengguna";
 var TAB_PENGADUAN = "pengaduan";
+var TAB_ADMIN = "permintaanAdmin";
 
 var HEADER_PENGGUNA = [
   "email",
@@ -51,6 +52,15 @@ var HEADER_PENGADUAN = [
   "dibuka",
   "balasan",
   "rahasia",
+];
+
+var HEADER_ADMIN = [
+  "email",
+  "nama",
+  "status",
+  "tanggal",
+  "putusanOleh",
+  "tanggalPutusan",
 ];
 
 function doGet() {
@@ -143,6 +153,13 @@ function wajibAdmin(akun) {
   return akun;
 }
 
+/** Hanya email di ADMIN yang boleh menyetujui admin lain. */
+function wajibPemilik(akun) {
+  wajibMasuk(akun);
+  if (!isAdmin(akun.email)) throw new Error("Hanya pemilik situs yang bisa menyetujui admin.");
+  return akun;
+}
+
 function bolehKelola(akun) {
   wajibMasuk(akun);
   if (isAdmin(akun.email)) return akun;
@@ -182,6 +199,10 @@ function tabPengguna() {
 
 function tabPengaduan() {
   return pastikanTab(TAB_PENGADUAN, HEADER_PENGADUAN);
+}
+
+function tabAdmin() {
+  return pastikanTab(TAB_ADMIN, HEADER_ADMIN);
 }
 
 /** Mengembalikan objek baris (berdasarkan header) atau null. */
@@ -245,6 +266,11 @@ function cariPengguna(email) {
 
 function cariPengaduan(tiket) {
   var hasil = cariBaris(tabPengaduan(), 0, tiket);
+  return hasil ? hasil.nilai : null;
+}
+
+function cariAdmin(email) {
+  var hasil = cariBaris(tabAdmin(), 0, email);
   return hasil ? hasil.nilai : null;
 }
 
@@ -320,13 +346,42 @@ function laporanUntukKlien(baris) {
 var JALUR = {
   /** Peran dan status akun yang sedang masuk. */
   aku: function (isi, akun) {
-    if (!akun) return { peran: "tamu", status: "belum-terdaftar" };
-    if (isAdmin(akun.email)) return { peran: "admin", status: "disetujui" };
+    if (!akun) {
+      return { peran: "tamu", status: "belum-terdaftar", pemilik: false, ajuanAdmin: "" };
+    }
+
+    if (isAdmin(akun.email)) {
+      return { peran: "admin", status: "disetujui", pemilik: true, ajuanAdmin: "" };
+    }
+
+    var ajuan = cariAdmin(akun.email);
+    var statusAjuan = ajuan ? String(ajuan.status || "menunggu") : "";
+
+    if (statusAjuan === "disetujui") {
+      return {
+        peran: "admin",
+        status: "disetujui",
+        pemilik: false,
+        ajuanAdmin: "disetujui",
+      };
+    }
 
     var pengguna = cariPengguna(akun.email);
-    if (!pengguna) return { peran: "didik", status: "belum-terdaftar" };
+    if (!pengguna) {
+      return {
+        peran: "didik",
+        status: "belum-terdaftar",
+        pemilik: false,
+        ajuanAdmin: statusAjuan,
+      };
+    }
 
-    return { peran: "guru", status: String(pengguna.status || "menunggu") };
+    return {
+      peran: "guru",
+      status: String(pengguna.status || "menunggu"),
+      pemilik: false,
+      ajuanAdmin: statusAjuan,
+    };
   },
 
   /** Pendaftaran Guru BK. Admin tidak ikut didaftarkan. */
@@ -370,6 +425,47 @@ var JALUR = {
           tanggal: new Date().toISOString(),
         },
         HEADER_PENGGUNA,
+      );
+
+      return { status: "menunggu" };
+    } finally {
+      kunci.releaseLock();
+    }
+  },
+
+  /** Pengguna meminta akses admin. Hanya pemilik situs yang memutuskan. */
+  ajukanAdmin: function (isi, akun) {
+    wajibMasuk(akun);
+
+    if (isAdmin(akun.email)) throw new Error("Kamu sudah menjadi admin.");
+
+    var kunci = LockService.getScriptLock();
+    kunci.waitLock(10000);
+
+    try {
+      var tab = tabAdmin();
+      var ada = cariBaris(tab, 0, akun.email);
+
+      if (ada) {
+        var status = String(ada.nilai.status || "menunggu");
+        if (status !== "ditolak") return { status: status };
+
+        var header = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0];
+        tab.getRange(ada.nomorBaris, header.indexOf("status") + 1).setValue("menunggu");
+        tab.getRange(ada.nomorBaris, header.indexOf("putusanOleh") + 1).setValue("");
+        tab.getRange(ada.nomorBaris, header.indexOf("tanggalPutusan") + 1).setValue("");
+        return { status: "menunggu" };
+      }
+
+      tulisBaris(
+        tab,
+        {
+          email: akun.email,
+          nama: akun.nama,
+          status: "menunggu",
+          tanggal: new Date().toISOString(),
+        },
+        HEADER_ADMIN,
       );
 
       return { status: "menunggu" };
@@ -549,6 +645,48 @@ var JALUR = {
     tab.getRange(ada.nomorBaris, kolomStatus).setValue(putusan);
     tab.getRange(ada.nomorBaris, kolomOleh).setValue(akun.email);
     tab.getRange(ada.nomorBaris, kolomTanggal).setValue(new Date().toISOString());
+
+    return { email: email, status: putusan };
+  },
+
+  /** Daftar permintaan akses admin. Khusus pemilik situs. */
+  adminPendaftaranAdmin: function (isi, akun) {
+    wajibPemilik(akun);
+
+    return semuaBaris(tabAdmin()).map(function (baris) {
+      return {
+        email: String(baris.email),
+        nama: String(baris.nama),
+        status: String(baris.status || "menunggu"),
+        tanggal: teks(baris.tanggal),
+        putusanOleh: String(baris.putusanOleh || ""),
+        tanggalPutusan: teks(baris.tanggalPutusan),
+      };
+    });
+  },
+
+  /** Setujui atau tolak permintaan admin. Khusus pemilik situs. */
+  adminPutusanAdmin: function (isi, akun) {
+    wajibPemilik(akun);
+
+    var email = String(isi.email || "").toLowerCase();
+    var putusan = String(isi.putusan || "");
+
+    if (putusan !== "disetujui" && putusan !== "ditolak") {
+      throw new Error("Putusan harus disetujui atau ditolak.");
+    }
+
+    var tab = tabAdmin();
+    var ada = cariBaris(tab, 0, email);
+    if (!ada) throw new Error("Permintaan admin " + email + " tidak ditemukan.");
+
+    var header = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0];
+
+    tab.getRange(ada.nomorBaris, header.indexOf("status") + 1).setValue(putusan);
+    tab.getRange(ada.nomorBaris, header.indexOf("putusanOleh") + 1).setValue(akun.email);
+    tab
+      .getRange(ada.nomorBaris, header.indexOf("tanggalPutusan") + 1)
+      .setValue(new Date().toISOString());
 
     return { email: email, status: putusan };
   },
