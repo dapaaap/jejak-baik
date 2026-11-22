@@ -33,6 +33,8 @@ export const panelAdmin = {
   kosongAdmin: "Belum ada permintaan admin.",
   memuatDaftarAdmin: "Memuat permintaan admin...",
   adminCatatan: "Hanya pemilik situs yang bisa menyetujui permintaan admin.",
+  galatAdmin:
+    "Permintaan admin tidak bisa dimuat. Pastikan Apps Script sudah memakai versi terbaru, lalu coba lagi.",
   sekolah: "Sekolah",
   jabatan: "Jabatan",
   mendaftar: "Mendaftar",

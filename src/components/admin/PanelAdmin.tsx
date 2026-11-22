@@ -140,6 +140,7 @@ export function PanelAdmin() {
   const [pemilik, setPemilik] = useState(false);
   const [memuatDaftar, setMemuatDaftar] = useState(false);
   const [galat, setGalat] = useState("");
+  const [galatAdmin, setGalatAdmin] = useState("");
   const [pesan, setPesan] = useState("");
   const [sibuk, setSibuk] = useState("");
   const [ulang, setUlang] = useState(0);
@@ -152,6 +153,7 @@ export function PanelAdmin() {
     async function mulai() {
       setTahap("memuat");
       setGalat("");
+      setGalatAdmin("");
 
       try {
         const akun = await panggilSheets<AkunServer>("aku");
@@ -166,16 +168,23 @@ export function PanelAdmin() {
         setTahap("boleh");
         setMemuatDaftar(true);
 
-        const [hasil, permintaanAdmin] = await Promise.all([
-          panggilSheets<PendaftarGuru[]>("adminPendaftaran"),
-          akun.pemilik
-            ? panggilSheets<CalonAdmin[]>("adminPendaftaranAdmin")
-            : Promise.resolve([] as CalonAdmin[]),
-        ]);
+        const hasil = await panggilSheets<PendaftarGuru[]>("adminPendaftaran");
         if (!aktif) return;
 
         setPendaftar(hasil);
-        setCalonAdmin(permintaanAdmin);
+
+        if (akun.pemilik) {
+          try {
+            const permintaanAdmin = await panggilSheets<CalonAdmin[]>("adminPendaftaranAdmin");
+            if (!aktif) return;
+            setCalonAdmin(permintaanAdmin);
+          } catch (error) {
+            if (!aktif) return;
+            setGalatAdmin(
+              error instanceof Error && error.message ? error.message : panelAdmin.galatAdmin,
+            );
+          }
+        }
       } catch (error) {
         if (!aktif) return;
         setGalat(pesanGalat(error));
@@ -339,7 +348,11 @@ export function PanelAdmin() {
             </p>
           ) : null}
 
-          {memuatDaftar ? (
+          {galatAdmin ? (
+            <p role="alert" className="mt-3 text-small font-medium text-danger">
+              {galatAdmin}
+            </p>
+          ) : memuatDaftar ? (
             <p role="status" className="mt-3 text-small text-ink-muted">
               {panelAdmin.memuatDaftarAdmin}
             </p>

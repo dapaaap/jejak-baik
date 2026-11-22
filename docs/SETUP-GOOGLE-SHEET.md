@@ -14,7 +14,7 @@ Apps Script. Tidak ada proses Node yang perlu dirawat di VPS.
 
 1. Di spreadsheet, buka **Extensions > Apps Script**.
 2. Hapus isi `Code.gs`, lalu tempel seluruh isi `docs/apps-script.gs`.
-3. Ubah tiga baris di bagian atas:
+3. Periksa tiga baris di bagian atas, lalu sesuaikan `ADMIN` dan `FOLDER_BUKTI`:
 
    ```js
    var CLIENT_ID = "952508349133-9c2rh227hiovent3e1scpo34hjqf8hsa.apps.googleusercontent.com";
@@ -31,6 +31,8 @@ Apps Script. Tidak ada proses Node yang perlu dirawat di VPS.
 
 4. Simpan (`Ctrl+S`). Setiap kali `ADMIN` atau `FOLDER_BUKTI` diubah, buat
    versi deploy baru (langkah 3 nomor 6 di bawah) supaya perubahannya dipakai.
+   Saat memperbarui skrip yang sudah terpasang, tempel ulang seluruh file, lalu
+   isi lagi `ADMIN` dan `FOLDER_BUKTI` sebelum membuat versi baru.
 
 ## 3. Deploy sebagai Web App
 
